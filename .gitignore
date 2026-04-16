@@ -34,3 +34,15 @@ build/
 
 ### Local secrets (copy from run-local.bat.example) ###
 run-local.bat
+# Secrets — không commit
+application-local.yml
+**/application-local.yml
+
+# Maven / IDE
+target/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.class
