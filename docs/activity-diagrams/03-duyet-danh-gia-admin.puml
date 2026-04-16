@@ -1,0 +1,39 @@
+@startuml FCAR-duyet-danh-gia-admin
+' Ký hiệu theo mẫu giảng viên: swimlane, nhánh [guard], merge, kết thúc
+
+skinparam backgroundColor white
+skinparam activity {
+  BackgroundColor white
+  BorderColor black
+  DiamondBackgroundColor white
+  FontSize 11
+}
+skinparam ArrowColor black
+
+title Activity Diagram — Duyệt / ẩn đánh giá xe (Admin, chức năng chính FCAR)
+
+|Quản trị viên|
+start
+:Mở danh sách đánh giá (lọc theo trạng thái);
+
+|Hệ thống FCAR|
+:Tải danh sách đánh giá từ CSDL;
+:Hiển thị bảng đánh giá;
+
+|Quản trị viên|
+:Chọn một đánh giá và thao tác;
+
+|Hệ thống FCAR|
+if (Thao tác?) then ([Duyệt hiển thị])
+  :Đặt trạng thái hiển thị (không ẩn);
+else ([Ẩn khỏi trang xe])
+  :Đặt trạng thái ẩn;
+endif
+
+:Lưu thay đổi vào CSDL;
+
+|Quản trị viên|
+:Xem thông báo thành công và danh sách cập nhật;
+stop
+
+@enduml

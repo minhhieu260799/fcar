@@ -1,0 +1,54 @@
+@startuml FCAR-lien-he-tu-van
+' Ký hiệu theo mẫu giảng viên: swimlane, start/stop, nhánh [guard], fork/join
+
+skinparam backgroundColor white
+skinparam activity {
+  BackgroundColor white
+  BorderColor black
+  DiamondBackgroundColor white
+  FontSize 11
+}
+skinparam ArrowColor black
+
+title Activity Diagram — Liên hệ tư vấn theo xe (FCAR)
+
+|Khách hàng|
+start
+:Mở trang liên hệ tư vấn cho xe;
+
+|Hệ thống FCAR|
+if (Đã đăng nhập?) then ([Chưa])
+  |Khách hàng|
+  :Đăng nhập;
+  |Hệ thống FCAR|
+endif
+
+if (Xe tồn tại?) then ([Không])
+  |Khách hàng|
+  :Hiển thị lỗi không tìm thấy xe;
+  stop
+else ([Có])
+endif
+
+if (Đã có yêu cầu PENDING cùng xe?) then ([Có])
+  |Khách hàng|
+  :Hiển thị trang đã đăng ký liên hệ;
+  stop
+else ([Chưa])
+endif
+
+|Khách hàng|
+:Gửi yêu cầu liên hệ;
+
+|Hệ thống FCAR|
+fork
+  :Lưu ContactRequest trạng thái PENDING;
+fork again
+  :Gửi email xác nhận đã nhận yêu cầu;
+end fork
+
+|Khách hàng|
+:Xem thông báo thành công trong lịch sử;
+stop
+
+@enduml

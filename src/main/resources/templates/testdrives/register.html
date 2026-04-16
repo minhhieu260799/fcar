@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!-- Phân công: Bảo — đăng ký lái thử. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
+<body>
+<section class="test-drive-register-page py-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb small mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/cars}">Danh sách xe</a></li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{|/cars/${car.carDefinition.id}|}"
+                           th:text="${@carDefinitionLabelFormatter.format(car.carDefinition)}">Xe</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Đăng ký lái thử</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <div class="card-header bg-primary text-white py-4 px-4 px-md-5 border-0">
+                    <p class="text-white-50 small text-uppercase letter-spacing-1 mb-1">Showroom FCAR</p>
+                    <h1 class="h3 mb-0 fw-semibold d-flex align-items-center gap-2 flex-wrap">
+                        <span class="text-white-50" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2H6ZM4.862 4.276A.5.5 0 0 1 5.24 4h5.52a.5.5 0 0 1 .378.192l1.42 1.776a.5.5 0 0 1-.39.792H2.452a.5.5 0 0 1-.39-.792l1.42-1.776Z"/>
+                                <path d="M2.52 3.5h10.96c.345 0 .59.332.503.662l-1.004 4.006A2.5 2.5 0 0 1 10.563 10H5.437a2.5 2.5 0 0 1-2.416-1.832L2.017 4.162c-.087-.33.158-.662.503-.662Zm1.873.535-.818 3.272a1.5 1.5 0 0 0 1.45 1.115h5.95a1.5 1.5 0 0 0 1.45-1.115l-.818-3.272H4.393Z"/>
+                            </svg>
+                        </span>
+                        Đăng ký lái thử
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-90" th:text="${@carDefinitionLabelFormatter.format(car.carDefinition)}">Tên xe</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <p class="text-secondary mb-4">
+                        Chọn ngày và giờ phù hợp. Sau khi gửi, showroom sẽ xác nhận và liên hệ lại với bạn.
+                    </p>
+
+                    <h2 class="h6 text-uppercase text-muted fw-semibold letter-spacing-1 mb-3">Chi nhánh có xe trưng bày</h2>
+                    <div th:if="${branches == null or #lists.isEmpty(branches)}" class="alert alert-light border mb-4">
+                        Hiện chưa có chi nhánh nào hiển thị cho mẫu xe này.
+                    </div>
+                    <ul class="list-group list-group-flush rounded-3 border mb-4 mb-md-5" th:if="${branches != null and !#lists.isEmpty(branches)}">
+                        <li class="list-group-item px-3 py-3" th:each="b : ${branches}">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="text-primary flex-shrink-0 mt-1" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                    </svg>
+                                </span>
+                                <div class="min-w-0">
+                                    <div class="fw-semibold" th:text="${b.name}">Cửa hàng</div>
+                                    <div class="small text-muted mt-1" th:text="${b.address}">Địa chỉ</div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div th:if="${error}" class="alert alert-danger d-flex align-items-start gap-2 mb-4" role="alert">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="flex-shrink-0 mt-1" viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                        </svg>
+                        <span th:text="${error}"></span>
+                    </div>
+
+                    <form th:action="@{/test-drives/register}" th:object="${form}" method="post" class="needs-validation" novalidate>
+                        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                        <input type="hidden" th:field="*{carId}">
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="testDriveDate">Ngày lái thử</label>
+                                <input type="date" class="form-control form-control-lg" id="testDriveDate"
+                                       th:field="*{date}" required
+                                       th:attr="min=${registerDateMin}">
+                                <div class="form-text">Chỉ chọn từ hôm nay trở đi.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="testDriveTime">Giờ lái thử</label>
+                                <input type="time" class="form-control form-control-lg" id="testDriveTime"
+                                       th:field="*{time}" required>
+                                <div class="form-text">Giờ làm việc có thể được showroom xác nhận lại.</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-3 mt-4 mt-md-5">
+                            <button type="submit" class="btn btn-primary btn-lg px-4 py-3 rounded-3 fw-semibold">
+                                Xác nhận đăng ký lái thử
+                            </button>
+                            <p class="text-muted small text-center mb-0 px-md-2">
+                                Lịch đặt có thể được điều chỉnh nếu khung giờ đã có khách khác — bạn sẽ nhận thông báo qua email (nếu có).
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a th:href="@{|/cars/${car.carDefinition.id}|}" class="btn btn-link text-decoration-none text-secondary">
+                    &larr; Quay lại chi tiết xe
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

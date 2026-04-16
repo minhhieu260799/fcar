@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiếu — quản lý định nghĩa xe. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section>
+    <!-- <h1 class="h4 mb-3">Quản lý xe</h1> -->
+
+    <th:block th:if="${error}">
+        <div th:replace="~{fragments/admin-error-toast :: toast(error=${error})}"></div>
+    </th:block>
+    <th:block th:if="${success}">
+        <div th:replace="~{fragments/admin-success-toast :: toast(success=${success})}"></div>
+    </th:block>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" th:href="@{/admin/cars/definitions}">Danh sách mẫu xe</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/admin/cars/import}">Nhập xe</a>
+        </li>
+    </ul>
+
+    <div class="mb-3">
+        <button type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#addCarDefinitionModal">
+            Thêm mẫu xe
+        </button>
+    </div>
+
+    <form method="get" class="row g-2 mb-3" id="definitionsFilterForm">
+        <div class="col-md-4">
+            <label class="form-label small mb-1">Thương hiệu</label>
+            <select name="brandId" class="form-select" id="definitionsBrandFilter">
+                <option value="" th:selected="${brandId == null}">Tất cả</option>
+                <option th:each="b : ${brands}" th:value="${b.id}" th:text="${b.name}"
+                        th:selected="${brandId != null and brandId == b.id}"></option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small mb-1">Dòng xe</label>
+            <select name="modelId" class="form-select" id="definitionsModelFilter"
+                    th:attr="data-current-model-id=${modelId}">
+                <option value="" th:selected="${modelId == null}">Tất cả</option>
+                <option th:each="m : ${models}"
+                        th:value="${m.id}"
+                        th:text="${m.name}"
+                        th:attr="data-brand-id=${m.brand != null ? m.brand.id : 0}"
+                        th:selected="${modelId != null and modelId == m.id}"></option>
+            </select>
+        </div>
+    </form>
+
+    <table class="table table-striped table-hover align-middle">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Mẫu xe</th>
+            <th>Giá bán</th>
+            <th>Giá khuyến mãi</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="d : ${definitions}">
+            <td th:text="${d.id}"></td>
+            <td>
+                <div class="fw-semibold" th:text="${@carDefinitionLabelFormatter.format(d)}"></div>
+            </td>
+            <td th:text="${d.salePrice != null ? #numbers.formatDecimal(d.salePrice, 0, 'COMMA', 0, 'POINT') : '--'}"></td>
+            <td th:text="${d.promoPrice != null ? #numbers.formatDecimal(d.promoPrice, 0, 'COMMA', 0, 'POINT') : '--'}"></td>
+            <td>
+                <form th:if="${d.active}" th:action="@{|/admin/cars/definitions/${d.id}/disable|}" method="post"
+                      style="display:inline">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <button type="submit" class="btn btn-sm btn-success">Hoạt động</button>
+                </form>
+                <form th:if="${!d.active}" th:action="@{|/admin/cars/definitions/${d.id}/enable|}" method="post"
+                      style="display:inline">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <button type="submit" class="btn btn-sm btn-danger">Tạm ngưng</button>
+                </form>
+            </td>
+            <td>
+                <button type="button" class="btn btn-link btn-sm p-0 edit-definition-btn"
+                        th:attr="data-id=${d.id}">Cập nhật</button>
+                <form th:action="@{|/admin/cars/definitions/${d.id}/delete|}" method="post" style="display:inline"
+                      onsubmit="return confirm('Bạn có chắc muốn xóa mẫu xe này? Chỉ xóa được khi không còn xe trong kho.');">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    <button type="submit" class="btn btn-link btn-sm p-0 text-danger">Xóa</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="modal fade" id="addCarDefinitionModal" tabindex="-1"
+         aria-labelledby="addCarDefinitionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <form th:action="@{/admin/cars/definitions}" th:object="${form}" method="post"
+                  class="modal-content" enctype="multipart/form-data"
+                  onsubmit="return confirm('Bạn có chắc rằng muốn thêm mẫu xe mới?');">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCarDefinitionModalLabel">Thêm mẫu xe mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Thông số chung -->
+                    <h6 class="mb-2">Thông số chung</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Thương hiệu</label>
+                            <select id="addDefinitionBrand" class="form-select" name="brandId" required>
+                                <option value="">Chọn thương hiệu</option>
+                                <option th:each="b : ${brands}" th:value="${b.id}" th:text="${b.name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Dòng xe</label>
+                            <select id="addDefinitionModel" class="form-select" name="modelId" required>
+                                <option value="">Chọn dòng xe</option>
+                                <option th:each="m : ${models}" th:value="${m.id}" th:text="${m.name}" th:attr="data-brand-id=${m.brand != null ? m.brand.id : ''}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Phân khúc</label>
+                            <select id="addDefinitionSegment" class="form-select" name="segmentId" required>
+                                <option value="">Chọn phân khúc</option>
+                                <option th:each="s : ${segments}" th:value="${s.id}" th:text="${s.name}"
+                                        th:attr="data-model-id=${s.model != null ? s.model.id : ''}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Năm sản xuất</label>
+                            <select id="addDefinitionYear" class="form-select" name="productionYear" required>
+                                <option value="">Chọn năm</option>
+                                <option th:each="y : ${productionYears}" th:value="${y}" th:text="${y}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Chọn màu sắc</label>
+                            <div id="colorsWrapper" class="d-flex flex-wrap align-items-center gap-2">
+                                <div id="colorsContainer" class="d-flex flex-wrap align-items-center gap-2">
+                                    <div class="color-item d-flex align-items-center">
+                                        <input type="color"
+                                               class="form-control form-control-color p-0"
+                                               name="colors"
+                                               value="#ffffff"
+                                               title="Chọn màu"
+                                               style="width: 2.5rem; height: 2rem;">
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-sm ms-1"
+                                                data-role="remove-color">&times;</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddColor">
+                                    + Thêm màu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <!-- Thông số chi tiết -->
+                    <h6 class="mb-2">Thông số chi tiết</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Kiểu dáng</label>
+                            <select id="addDefinitionBodyType" class="form-select" name="bodyType" required
+                                    oninvalid="this.setCustomValidity('Vui lòng chọn kiểu dáng')"
+                                    oninput="this.setCustomValidity('')">
+                                <option value="">Chọn kiểu dáng</option>
+                                <option th:each="bt : ${bodyTypes}" th:value="${bt.name()}" th:text="${bt.displayName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Nhiên liệu</label>
+                            <input type="text" class="form-control" th:field="*{fuelType}" required
+                                   oninvalid="this.setCustomValidity('Vui lòng nhập nhiên liệu')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Số ghế</label>
+                            <select id="addDefinitionSeats"
+                                    class="form-select"
+                                    name="seats"
+                                    required
+                                    oninvalid="this.setCustomValidity('Vui lòng chọn số ghế')"
+                                    oninput="this.setCustomValidity('')">
+                                <option value="">Chọn số ghế</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                                <option value="15">15</option>
+                                <option value="16">16</option>
+                                <option value="16">16+</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Công suất (mã lực)</label>
+                            <input type="number" class="form-control" th:field="*{horsepower}" required
+                                   oninvalid="this.setCustomValidity('Vui lòng nhập công suất')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Giá bán (VND)</label>
+                            <input type="number" step="1000" class="form-control" th:field="*{salePrice}" required
+                                   min="1000"
+                                   oninvalid="this.setCustomValidity('Vui lòng nhập giá bán > 1000')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Giá khuyến mãi (VND)</label>
+                            <input type="number" step="1000" class="form-control" th:field="*{promoPrice}" min="0">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label">Thông số khác</label>
+                        <div id="attributesWrapper" class="d-flex flex-wrap align-items-start gap-2">
+                            <div id="attributesContainer" class="d-flex flex-wrap align-items-start gap-2"></div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddAttribute">
+                                + Thêm thông số
+                            </button>
+                        </div>
+                        <div class="form-text">Tên tối đa 50 ký tự, giá trị tối đa 100 ký tự. Ví dụ: Bảo hành — 5 năm.</div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <!-- Hình ảnh -->
+                    <h6 class="mb-2">Hình ảnh</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ảnh đại diện</label>
+                            <input type="file" class="form-control" th:field="*{coverImage}" accept="image/*">
+                            <div class="form-text">Ảnh dùng hiển thị ở trang chủ.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label d-flex justify-content-between align-items-center">
+                                <span>Bộ ảnh</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddGalleryImage">
+                                    + Thêm ảnh
+                                </button>
+                            </label>
+                            <div id="galleryImagesContainer">
+                                <div class="input-group mb-2 gallery-item">
+                                    <input type="file" class="form-control" name="galleryImages"
+                                           accept="image/*">
+                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                            data-role="remove-gallery">&times;</button>
+                                </div>
+                            </div>
+                            <div class="form-text">Có thể thêm nhiều ảnh cho bộ ảnh.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm mẫu xe mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Cập nhật mẫu xe -->
+    <div class="modal fade" id="editCarDefinitionModal" tabindex="-1"
+         aria-labelledby="editCarDefinitionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <form id="editDefinitionForm" class="modal-content" method="post" enctype="multipart/form-data" action="#">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCarDefinitionModalLabel">Cập nhật mẫu xe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="editDefinitionError" class="alert alert-danger d-none" role="alert"></div>
+                    <input type="hidden" name="brandId" id="editBrandId">
+                    <input type="hidden" name="modelId" id="editModelId">
+                    <input type="hidden" name="segmentId" id="editSegmentId">
+                    <input type="hidden" name="productionYear" id="editProductionYear">
+                    <h6 class="mb-2">Thông số chung</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Thương hiệu</label>
+                            <input type="text" class="form-control" id="editBrandName" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Dòng xe</label>
+                            <input type="text" class="form-control" id="editModelName" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Phân khúc</label>
+                            <input type="text" class="form-control" id="editSegmentName" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Năm sản xuất</label>
+                            <input type="text" class="form-control" id="editProductionYearDisplay" readonly>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Màu sắc</label>
+                            <div id="editExistingColors" class="d-flex flex-wrap gap-2 mb-2"></div>
+                            <!-- <label class="form-label">Thêm màu mới</label> -->
+                            <div id="editNewColorsWrapper" class="d-flex flex-wrap align-items-center gap-2">
+                                <div id="editNewColorsContainer" class="d-flex flex-wrap align-items-center gap-2"></div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="editBtnAddColor">+ Thêm màu</button>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                    <h6 class="mb-2">Thông số chi tiết</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Kiểu dáng</label>
+                            <select name="bodyType" id="editBodyType" class="form-select" required
+                                    oninvalid="this.setCustomValidity('Vui lòng chọn kiểu dáng')"
+                                    oninput="this.setCustomValidity('')">
+                                <option value="">Chọn kiểu dáng</option>
+                                <!-- Options được điền bởi JS từ edit-data -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Nhiên liệu</label>
+                            <input type="text" class="form-control" name="fuelType" id="editFuelType" required
+                                   oninvalid="this.setCustomValidity('Vui lòng nhập nhiên liệu')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Số ghế</label>
+                            <select class="form-select"
+                                    name="seats"
+                                    id="editSeats"
+                                    required
+                                    oninvalid="this.setCustomValidity('Vui lòng chọn số ghế')"
+                                    oninput="this.setCustomValidity('')">
+                                <option value="">Chọn số ghế</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                                <option value="15">15</option>
+                                <option value="16">16</option>
+                                <option value="16">16+</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Công suất (mã lực)</label>
+                            <input type="number" class="form-control" name="horsepower" id="editHorsepower" required
+                                   oninvalid="this.setCustomValidity('Vui lòng nhập công suất')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Giá bán (VND)</label>
+                            <input type="number" step="1000" class="form-control" name="salePrice" id="editSalePrice"
+                                   required min="1000"
+                                   oninvalid="this.setCustomValidity('Vui lòng nhập giá bán > 0')"
+                                   oninput="this.setCustomValidity('')">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Giá khuyến mãi (VND)</label>
+                            <input type="number" step="1000" class="form-control" name="promoPrice" id="editPromoPrice"
+                                   min="0">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" name="description" id="editDescription" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Thông số khác</label>
+                        <div id="editAttributesWrapper" class="d-flex flex-wrap align-items-start gap-2">
+                            <div id="editAttributesContainer" class="d-flex flex-wrap align-items-start gap-2"></div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="editBtnAddAttribute">+ Thêm thông số</button>
+                        </div>
+                        <div class="form-text">Tên tối đa 50 ký tự, giá trị tối đa 100 ký tự.</div>
+                    </div>
+                    <hr class="my-3">
+                    <h6 class="mb-2">Hình ảnh</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-12">
+                            <!-- <label class="form-label">Ảnh hiện có</label> -->
+                            <div id="editExistingImagesList" class="d-flex flex-wrap gap-2 align-items-start">
+                                <!-- Thumbnail + nút Xóa do JS điền -->
+                            </div>
+                            <div id="editExistingImagesEmpty" class="text-muted small d-none">Chưa có ảnh.</div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ảnh đại diện</label>
+                            <input type="file" class="form-control" name="coverImage" accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bộ ảnh</label>
+                            <div id="editGalleryContainer">
+                                <div class="input-group mb-2 edit-gallery-item">
+                                    <input type="file" class="form-control" name="galleryImages" accept="image/*">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-role="remove-edit-gallery">&times;</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="editBtnAddGallery">+ Thêm ảnh</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Giống trang phân khúc: lọc tự động + chỉ hiển thị dòng xe thuộc thương hiệu đã chọn
+            var brandFilter = document.getElementById('definitionsBrandFilter');
+            var modelFilter = document.getElementById('definitionsModelFilter');
+            var filterForm = document.getElementById('definitionsFilterForm');
+            if (brandFilter && modelFilter) {
+                var allModelOptions = Array.from(modelFilter.querySelectorAll('option'))
+                    .filter(function (opt) { return opt.value !== ''; });
+
+                function refreshDefinitionModelOptions() {
+                    var brandId = brandFilter.value;
+                    var currentModelId = modelFilter.getAttribute('data-current-model-id') || '';
+
+                    while (modelFilter.options.length > 1) {
+                        modelFilter.remove(1);
+                    }
+
+                    if (!brandId) {
+                        modelFilter.selectedIndex = 0;
+                        modelFilter.setAttribute('data-current-model-id', '');
+                        return;
+                    }
+
+                    allModelOptions.forEach(function (opt) {
+                        if (opt.getAttribute('data-brand-id') === brandId) {
+                            modelFilter.appendChild(opt.cloneNode(true));
+                        }
+                    });
+
+                    if (currentModelId) {
+                        Array.from(modelFilter.options).forEach(function (opt) {
+                            if (opt.value === currentModelId) {
+                                opt.selected = true;
+                            }
+                        });
+                    } else {
+                        modelFilter.selectedIndex = 0;
+                    }
+                }
+
+                refreshDefinitionModelOptions();
+
+                brandFilter.addEventListener('change', function () {
+                    modelFilter.setAttribute('data-current-model-id', '');
+                    refreshDefinitionModelOptions();
+                    if (filterForm) {
+                        filterForm.submit();
+                    }
+                });
+
+                modelFilter.addEventListener('change', function () {
+                    modelFilter.setAttribute('data-current-model-id', modelFilter.value || '');
+                    if (filterForm) {
+                        filterForm.submit();
+                    }
+                });
+            }
+        });
+    </script>
+    <script th:src="@{/js/admin-cars-definitions.js}"></script>
+</section>
+</body>
+</html>
+

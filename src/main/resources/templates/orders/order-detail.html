@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!-- Phân công: Minh — chi tiết đơn (khách). -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
+<body>
+<section class="order-detail-customer-page">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a th:href="@{/account/history}" class="text-decoration-none">Lịch sử cá nhân</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Đơn #<span th:text="${order.id}">0</span></li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-semibold mb-1">Chi tiết đơn mua xe</h1>
+            <p class="text-muted small mb-0">
+                Đơn <span class="font-monospace fw-semibold text-body" th:text="${order.id}">0</span>
+                <span class="mx-2">·</span>
+                <span th:text="${order.createdAt != null ? #temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm') : '—'}">—</span>
+            </p>
+        </div>
+        <span th:class="${'badge rounded-pill px-3 py-2 fs-6 ' + (order.status.name() == 'DEPOSITED' ? 'bg-info-subtle text-info-emphasis border border-info-subtle' : (order.status.name() == 'DELIVERED' ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : (order.status.name() == 'CANCELED' ? 'bg-danger-subtle text-danger-emphasis border border-danger-subtle' : (order.status.name() == 'REFUNDED' ? 'bg-primary-subtle text-primary-emphasis border border-primary-subtle' : 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle'))))}"
+              th:text="${@orderStatusLabelFormatter.format(order.status)}">Đã đặt cọc</span>
+    </div>
+
+    <div class="alert alert-warning border-0 mb-4" th:if="${order.status.name() == 'CANCELED'}" role="status">
+        <strong>Đơn hàng này đã được hủy.</strong>
+        Vui lòng chờ nhân viên FCAR liên hệ để hoàn tất hoàn tiền (toàn bộ số tiền đặt cọc).
+    </div>
+    <div class="alert alert-success border-0 mb-4" th:if="${order.status.name() == 'REFUNDED'}" role="status">
+        <strong>Đơn đã hoàn tiền.</strong>
+        Giao dịch kết thúc. Cảm ơn bạn đã sử dụng dịch vụ FCAR.
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+        <div class="row g-0">
+            <div class="col-lg-5 bg-light border-bottom border-lg-0 border-lg-end">
+                <div class="ratio ratio-16x9 bg-secondary-subtle">
+                    <img th:if="${orderCarCoverUrl != null and !#strings.isEmpty(orderCarCoverUrl)}"
+                         th:src="${orderCarCoverUrl}"
+                         class="object-fit-cover"
+                         alt="">
+                    <div th:unless="${orderCarCoverUrl != null and !#strings.isEmpty(orderCarCoverUrl)}"
+                         class="d-flex align-items-center justify-content-center text-secondary">
+                        <i class="bi bi-image display-4 opacity-50"></i>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-uppercase text-secondary small letter-spacing-1 mb-1">Xe bạn đã đặt</p>
+                    <h2 class="h5 fw-semibold mb-2"
+                        th:text="${@carDefinitionLabelFormatter.format(order.carInventory.carDefinition)}">Tên xe</h2>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        Năm <span th:text="${order.carInventory.carDefinition.productionYear}">2026</span>
+                    </p>
+                    <a th:href="@{|/cars/${order.carInventory.carDefinition.id}|}" class="btn btn-sm btn-outline-primary rounded-pill">
+                        <i class="bi bi-car-front me-1"></i>Xem chi tiết mẫu xe
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="p-4">
+                    <h3 class="h6 text-uppercase text-secondary small letter-spacing-1 mb-3">Số tiền</h3>
+                    <dl class="row mb-4 gx-3">
+                        <dt class="col-sm-5 text-muted">Giá niêm yết</dt>
+                        <dd class="col-sm-7 text-end font-monospace fw-semibold"
+                            th:text="${#numbers.formatDecimal(order.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'">0</dd>
+                        <dt class="col-sm-5 text-muted" th:if="${order.depositAmount != null}">Tiền đặt cọc</dt>
+                        <dd class="col-sm-7 text-end font-monospace" th:if="${order.depositAmount != null}"
+                            th:text="${#numbers.formatDecimal(order.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0</dd>
+                        <dt class="col-sm-5 text-muted" th:if="${order.paidAmount != null}">Đã thanh toán</dt>
+                        <dd class="col-sm-7 text-end font-monospace" th:if="${order.paidAmount != null}"
+                            th:text="${#numbers.formatDecimal(order.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0</dd>
+                        <dt class="col-sm-5 text-muted" th:if="${order.refundedAmount != null}">Số tiền hoàn (theo cọc)</dt>
+                        <dd class="col-sm-7 text-end font-monospace text-danger" th:if="${order.refundedAmount != null}"
+                            th:text="${#numbers.formatDecimal(order.refundedAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">0</dd>
+                    </dl>
+
+                    <div class="mb-4" th:if="${order.status.name() == 'REFUNDED' and order.refundProofImageUrl != null and !#strings.isEmpty(order.refundProofImageUrl)}">
+                        <h3 class="h6 text-uppercase text-secondary small letter-spacing-1 mb-2">Chứng từ hoàn tiền</h3>
+                        <a th:href="${order.refundProofImageUrl}" target="_blank" rel="noopener" class="d-inline-block border rounded-3 overflow-hidden shadow-sm">
+                            <img th:src="${order.refundProofImageUrl}" alt="Chứng từ hoàn tiền" class="img-fluid" style="max-height: 220px;">
+                        </a>
+                    </div>
+
+                    <h3 class="h6 text-uppercase text-secondary small letter-spacing-1 mb-3">Tiến trình</h3>
+                    <ul class="list-unstyled mb-0 order-detail-timeline">
+                        <li class="d-flex gap-3 pb-3">
+                            <span class="text-success flex-shrink-0"><i class="bi bi-check-circle-fill"></i></span>
+                            <div>
+                                <div class="fw-semibold">Đã đặt cọc</div>
+                                <div class="small text-muted">Chúng tôi đã ghi nhận thanh toán cọc của bạn.</div>
+                            </div>
+                        </li>
+                        <li class="d-flex gap-3 pb-3"
+                            th:if="${order.status.name() == 'DEPOSITED' or order.status.name() == 'DELIVERED'}">
+                            <span class="flex-shrink-0"
+                                  th:classappend="${order.status.name() == 'DELIVERED'} ? ' text-success' : ' text-primary'">
+                                <i th:class="${order.status.name() == 'DELIVERED'} ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
+                            </span>
+                            <div>
+                                <div class="fw-semibold" th:text="${order.status.name() == 'DELIVERED'} ? 'Đã giao xe' : 'Đang xử lý'">Đang xử lý</div>
+                                <div class="small text-muted"
+                                     th:text="${order.status.name() == 'DELIVERED'} ? 'Cảm ơn bạn đã mua xe tại FCAR.' : 'Showroom sẽ liên hệ và cập nhật khi giao xe.'">—</div>
+                            </div>
+                        </li>
+                        <li class="d-flex gap-3 pb-3"
+                            th:if="${order.status.name() == 'CANCELED' or order.status.name() == 'REFUNDED'}">
+                            <span class="text-warning flex-shrink-0"><i class="bi bi-x-octagon-fill"></i></span>
+                            <div>
+                                <div class="fw-semibold">Đơn đã hủy</div>
+                                <div class="small text-muted">Hoàn tiền: toàn bộ tiền cọc, sau khi showroom xác nhận.</div>
+                            </div>
+                        </li>
+                        <li class="d-flex gap-3" th:if="${order.status.name() == 'REFUNDED'}">
+                            <span class="text-success flex-shrink-0"><i class="bi bi-check-circle-fill"></i></span>
+                            <div>
+                                <div class="fw-semibold">Đã hoàn tiền</div>
+                                <div class="small text-muted">Đã xác nhận hoàn toàn bộ tiền đặt cọc.</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a th:href="@{/account/history}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại lịch sử
+        </a>
+        <button type="button" class="btn btn-outline-danger"
+                th:if="${order.status.name() == 'DEPOSITED'}"
+                data-bs-toggle="modal" data-bs-target="#confirmCancelOrderModal">
+            <i class="bi bi-x-lg me-1"></i>Hủy đơn
+        </button>
+    </div>
+
+    <div class="modal fade" id="confirmCancelOrderModal" tabindex="-1" aria-labelledby="confirmCancelOrderModalLabel" aria-hidden="true"
+         th:if="${order.status.name() == 'DEPOSITED'}">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h2 class="modal-title h5" id="confirmCancelOrderModalLabel">Xác nhận hủy đơn</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Bạn có chắc muốn hủy đơn hàng này? Sau khi hủy, vui lòng chờ nhân viên liên hệ để hoàn tất hoàn tiền (toàn bộ tiền cọc).</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Không</button>
+                    <form th:action="@{|/orders/${order.id}/cancel|}" method="post" class="d-inline">
+                        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                        <button type="submit" class="btn btn-danger">Có, hủy đơn</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

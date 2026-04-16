@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<!-- Phân công: Minh — lỗi luồng đặt cọc. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section>
+    <h1>Thông báo</h1>
+    <p th:text="${message}">Có lỗi xảy ra.</p>
+    <p><a th:href="@{/}">Quay về trang chủ</a></p>
+</section>
+</body>
+</html>
+

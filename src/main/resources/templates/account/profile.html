@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<!-- Phân công: Nguyên — quản lý thông tin cá nhân. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section class="account-profile-page">
+    <div th:if="${param.updated}" class="alert alert-success alert-dismissible fade show" role="alert">
+        Đã cập nhật hồ sơ.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${param.emailVerified}" class="alert alert-success alert-dismissible fade show" role="alert">
+        Đã xác nhận email.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${param.phoneAdded}" class="alert alert-success alert-dismissible fade show" role="alert">
+        Đã thêm số điện thoại.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${emailSent}" class="alert alert-info">Đã gửi mã OTP tới email của bạn.</div>
+
+    <div class="account-profile-hero card border-0 shadow-sm overflow-hidden mb-4">
+        <div class="account-profile-hero-bg"></div>
+        <div class="card-body text-center position-relative pt-5 pb-4 px-4">
+            <div class="account-profile-avatar-wrap mx-auto mb-3">
+                <label class="account-profile-avatar-label mb-0" title="Đổi ảnh đại diện">
+                    <span class="account-profile-avatar-ring">
+                        <img th:if="${user.avatarUrl != null and !user.avatarUrl.isBlank()}"
+                             th:src="${user.avatarUrl}" alt="" class="account-profile-avatar-img" id="profileAvatarImg">
+                        <span th:unless="${user.avatarUrl != null and !user.avatarUrl.isBlank()}"
+                              class="account-profile-avatar-placeholder" id="profileAvatarPlaceholder"
+                              th:text="${user.fullName != null and !user.fullName.isEmpty()} ? ${#strings.substring(user.fullName, 0, 1)} : '?'">?</span>
+                    </span>
+                    <input type="file" class="d-none" id="profileAvatarInput" accept="image/jpeg,image/png,image/gif,image/webp">
+                </label>
+                <!-- <div class="small text-muted mt-2">Bấm ảnh để chọn từ máy tính</div> -->
+                <div class="invalid-feedback d-block" id="profileAvatarError"></div>
+            </div>
+            <h1 class="h4 mb-1 fw-semibold" id="profileDisplayName" th:text="${user.fullName}">Tên</h1>
+            <p class="text-muted small mb-0" th:if="${user.email}" th:text="${user.email}">email</p>
+            <p class="text-muted small mb-0" th:unless="${user.email}">Chưa có email</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-4">
+            <button type="button" class="btn btn-primary w-100 py-3 rounded-3 shadow-sm" data-bs-toggle="modal"
+                    data-bs-target="#editProfileModal">
+                <span class="fw-semibold">Cập nhật hồ sơ</span>
+            </button>
+        </div>
+        <div class="col-sm-6 col-lg-4" th:if="${user.phone != null and !user.phone.isBlank()}">
+            <button type="button" class="btn btn-outline-primary w-100 py-3 rounded-3" data-bs-toggle="modal"
+                    data-bs-target="#addPhoneModal">
+                <span class="fw-semibold">Thêm số điện thoại</span>
+            </button>
+        </div>
+        <div class="col-sm-6 col-lg-4">
+            <a th:href="@{/account/change-password}" class="btn btn-outline-secondary w-100 py-3 rounded-3">
+                Đổi mật khẩu
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 account-profile-info-card">
+        <div class="card-body p-4 p-md-5">
+            <div class="text-center account-profile-info-heading mb-4 pb-2">
+                <h2 class="account-profile-info-heading-title mb-0">Thông tin cá nhân</h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="account-profile-info-item">
+                        <span class="account-profile-info-label">Họ và tên</span>
+                        <span class="account-profile-info-value" th:text="${user.fullName}">—</span>
+                    </div>
+                    <div class="account-profile-info-item">
+                        <span class="account-profile-info-label">Email</span>
+                        <div th:if="${user.email}">
+                            <span class="account-profile-info-value d-block" th:text="${user.email}">—</span>
+                            <!-- <span class="account-profile-info-hint">Không thể thay đổi email đã xác định.</span> -->
+                        </div>
+                        <div th:if="${user.email == null}">
+                            <span class="account-profile-info-value text-muted">Chưa có email</span>
+                        </div>
+                    </div>
+                    <div class="account-profile-info-item">
+                        <span class="account-profile-info-label">Số điện thoại</span>
+                        <span class="account-profile-info-value"
+                              th:text="${user.phone != null and !user.phone.isBlank()} ? ${user.phone} : '—'">—</span>
+                        <span class="account-profile-info-hint"
+                              th:if="${phones.isEmpty() and (user.phone == null or user.phone.isBlank())}">
+                            Chưa có — hệ thống sẽ nhắc bạn bổ sung khi cần.
+                        </span>
+                    </div>
+                    <div class="account-profile-info-item" th:if="${!phones.isEmpty()}">
+                        <span class="account-profile-info-label">Số điện thoại phụ</span>
+                        <ul class="list-unstyled mb-0 mt-1">
+                            <li th:each="p : ${phones}" class="d-flex align-items-center gap-2 flex-wrap py-1">
+                                <span class="badge rounded-pill"
+                                      th:classappend="${p.verified} ? ' text-bg-success' : ' text-bg-secondary'"
+                                      th:text="${p.phone}">090</span>
+                                <span class="small text-muted" th:text="${p.verified} ? 'Đã xác nhận' : 'Chưa xác nhận'"></span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="account-profile-info-item">
+                        <span class="account-profile-info-label">Giới tính</span>
+                        <span class="account-profile-info-value"
+                              th:text="${user.gender != null and !user.gender.isBlank()} ? ${user.gender} : '—'">—</span>
+                    </div>
+                    <div class="account-profile-info-item">
+                        <span class="account-profile-info-label">Ngày sinh</span>
+                        <span class="account-profile-info-value" th:if="${user.birthDate != null}"
+                              th:text="${#temporals.format(user.birthDate, 'dd/MM/yyyy')}">—</span>
+                        <span class="account-profile-info-value text-muted" th:unless="${user.birthDate != null}">—</span>
+                    </div>
+                    <div class="account-profile-info-item mb-0">
+                        <span class="account-profile-info-label">Địa chỉ</span>
+                        <span class="account-profile-info-value"
+                              th:text="${user.address != null and !user.address.isBlank()} ? ${user.address} : '—'">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${user.email == null}" class="mt-4 pt-4 border-top">
+                <div class="account-profile-email-setup rounded-3 p-3 p-md-4">
+                <h3 class="h6 fw-semibold mb-2">Thêm email</h3>
+                <p class="small text-muted mb-3">Xác nhận bằng OTP gửi tới hộp thư của bạn.</p>
+                <form th:action="@{/account/email/send-otp}" th:object="${emailForm}" method="post" class="mb-3">
+                    <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                    <label class="form-label small">Email</label>
+                    <input type="email" class="form-control form-control-sm" th:field="*{email}" required
+                           placeholder="you@example.com">
+                    <button type="submit" class="btn btn-sm btn-outline-primary mt-2">Gửi OTP</button>
+                </form>
+                <form th:action="@{/account/email/confirm}" th:object="${emailForm}" method="post">
+                    <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                    <label class="form-label small">Email</label>
+                    <input type="email" class="form-control form-control-sm mb-2" th:field="*{email}" required>
+                    <label class="form-label small">Mã OTP</label>
+                    <input type="text" class="form-control form-control-sm mb-2" th:field="*{code}" required
+                           maxlength="10" placeholder="Nhập mã">
+                    <button type="submit" class="btn btn-sm btn-success">Xác nhận email</button>
+                </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: cập nhật hồ sơ -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-3">
+                <div class="modal-header border-0 pb-0">
+                    <h2 class="modal-title fs-5" id="editProfileModalLabel">Cập nhật hồ sơ</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <div class="mb-3">
+                        <label class="form-label" for="pfFullName">Họ tên <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="pfFullName" maxlength="150" th:value="${user.fullName}">
+                        <div class="invalid-feedback d-block" id="pfFullNameErr"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="pfGender">Giới tính</label>
+                        <select class="form-select" id="pfGender">
+                            <option value="">— Chọn —</option>
+                            <option value="Nam" th:selected="${user.gender == 'Nam'}">Nam</option>
+                            <option value="Nữ" th:selected="${user.gender == 'Nữ'}">Nữ</option>
+                            <option value="Khác" th:selected="${user.gender == 'Khác'}">Khác</option>
+                            <option th:if="${user.gender != null and user.gender != '' and user.gender != 'Nam' and user.gender != 'Nữ' and user.gender != 'Khác'}"
+                                    th:value="${user.gender}" th:text="${user.gender}" selected>khác</option>
+                        </select>
+                        <div class="invalid-feedback d-block" id="pfGenderErr"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="pfBirthDate">Ngày sinh</label>
+                        <input type="date" class="form-control" id="pfBirthDate" th:value="${user.birthDate}">
+                        <div class="invalid-feedback d-block" id="pfBirthDateErr"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="pfAddress">Địa chỉ</label>
+                        <input type="text" class="form-control" id="pfAddress" maxlength="255" th:value="${user.address}">
+                        <div class="invalid-feedback d-block" id="pfAddressErr"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="pfSaveBtn">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: thêm số phụ -->
+    <div class="modal fade" id="addPhoneModal" tabindex="-1" aria-labelledby="addPhoneModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow rounded-3">
+                <div class="modal-header border-0 pb-0">
+                    <h2 class="modal-title fs-5" id="addPhoneModalLabel">Thêm số điện thoại</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="small text-muted">Số mới sẽ được xác nhận bằng OTP (demo hiển thị mã khi bật cấu hình).</p>
+                    <div class="mb-3">
+                        <label class="form-label" for="extraPhoneInput">Số điện thoại</label>
+                        <input type="text" class="form-control" id="extraPhoneInput" maxlength="20" inputmode="numeric"
+                               placeholder="Ví dụ: 0901234567">
+                        <div class="invalid-feedback d-block" id="extraPhoneErr"></div>
+                    </div>
+                    <button type="button" class="btn btn-primary mb-3" id="extraPhoneSendBtn">Gửi OTP</button>
+                    <div id="extraPhoneOtpBlock" class="d-none border-top pt-3">
+                        <div class="alert alert-info py-2 small d-none" id="extraPhoneDemoBox">
+                            <span class="fw-semibold">Demo:</span> Mã OTP là <code id="extraPhoneDemoCode">—</code>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="extraPhoneOtpInput">Mã OTP</label>
+                            <input type="text" class="form-control" id="extraPhoneOtpInput" maxlength="6" inputmode="numeric">
+                            <div class="invalid-feedback d-block" id="extraPhoneOtpErr"></div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-success" id="extraPhoneConfirmBtn">Xác nhận</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="extraPhoneResendBtn">Gửi lại OTP</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        (function () {
+            function readCsrf() {
+                var h = document.querySelector('meta[name="csrf-header"]');
+                var t = document.querySelector('meta[name="csrf-token"]');
+                return {
+                    header: h ? h.getAttribute('content') : '',
+                    token: t ? t.getAttribute('content') : ''
+                };
+            }
+
+            function jsonHeaders() {
+                var csrf = readCsrf();
+                var headers = {'Content-Type': 'application/json'};
+                if (csrf.header && csrf.token) headers[csrf.header] = csrf.token;
+                return headers;
+            }
+
+            function showFieldErrors(prefix, obj) {
+                ['FullName', 'Gender', 'BirthDate', 'Address'].forEach(function (f) {
+                    var el = document.getElementById(prefix + f + 'Err');
+                    if (el) el.textContent = '';
+                });
+                if (!obj || !obj.fieldErrors) return;
+                var fe = obj.fieldErrors;
+                var map = {
+                    fullName: prefix + 'FullNameErr',
+                    gender: prefix + 'GenderErr',
+                    birthDate: prefix + 'BirthDateErr',
+                    address: prefix + 'AddressErr',
+                    phone: 'extraPhoneErr',
+                    code: 'extraPhoneOtpErr',
+                    _: prefix === 'pf' ? 'pfFullNameErr' : 'extraPhoneErr'
+                };
+                Object.keys(fe).forEach(function (k) {
+                    var id = map[k];
+                    if (id) {
+                        var node = document.getElementById(id);
+                        if (node) node.textContent = fe[k];
+                    }
+                });
+            }
+
+            document.getElementById('pfSaveBtn').addEventListener('click', function () {
+                showFieldErrors('pf', {});
+                var body = {
+                    fullName: document.getElementById('pfFullName').value,
+                    gender: document.getElementById('pfGender').value,
+                    birthDate: document.getElementById('pfBirthDate').value || null,
+                    address: document.getElementById('pfAddress').value
+                };
+                fetch(/*[[@{/account/api/profile/update}]]*/ '/account/api/profile/update', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: jsonHeaders(),
+                    body: JSON.stringify(body)
+                }).then(function (r) {
+                    return r.json().then(function (j) { return {ok: r.ok, body: j}; });
+                }).then(function (x) {
+                    if (!x.ok) {
+                        showFieldErrors('pf', x.body);
+                        return;
+                    }
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                    if (modal) modal.hide();
+                    window.location.href = /*[[@{/account/profile}]]*/ '/account/profile' + '?updated';
+                }).catch(function () {
+                    document.getElementById('pfFullNameErr').textContent = 'Không lưu được, thử lại.';
+                });
+            });
+
+            var avatarInput = document.getElementById('profileAvatarInput');
+            var avatarErr = document.getElementById('profileAvatarError');
+            avatarInput.addEventListener('change', function () {
+                avatarErr.textContent = '';
+                if (!avatarInput.files || !avatarInput.files[0]) return;
+                var fd = new FormData();
+                fd.append('file', avatarInput.files[0]);
+                var csrf = readCsrf();
+                var headers = {};
+                if (csrf.header && csrf.token) headers[csrf.header] = csrf.token;
+                fetch(/*[[@{/account/api/profile/avatar}]]*/ '/account/api/profile/avatar', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: headers,
+                    body: fd
+                }).then(function (r) {
+                    return r.json().then(function (j) { return {ok: r.ok, body: j}; });
+                }).then(function (x) {
+                    if (!x.ok) {
+                        avatarErr.textContent = (x.body && x.body.message) ? x.body.message : 'Tải ảnh thất bại';
+                        return;
+                    }
+                    var url = x.body.avatarUrl;
+                    if (url) {
+                        var ring = document.querySelector('.account-profile-avatar-ring');
+                        var img = document.getElementById('profileAvatarImg');
+                        var ph = document.getElementById('profileAvatarPlaceholder');
+                        if (img) {
+                            img.src = url;
+                        } else if (ring) {
+                            ring.innerHTML = '<img id="profileAvatarImg" class="account-profile-avatar-img" src="'
+                                    + url.replace(/"/g, '') + '" alt="">';
+                        }
+                        if (ph) ph.remove();
+                    }
+                    avatarInput.value = '';
+                }).catch(function () {
+                    avatarErr.textContent = 'Không tải được ảnh.';
+                });
+            });
+
+            var extraNorm = '';
+            function clearExtraErrors() {
+                document.getElementById('extraPhoneErr').textContent = '';
+                document.getElementById('extraPhoneOtpErr').textContent = '';
+            }
+
+            function applyExtraResponse(data) {
+                clearExtraErrors();
+                if (!data.ok) {
+                    showFieldErrors('', data);
+                    return;
+                }
+                extraNorm = data.normalizedPhone || '';
+                document.getElementById('extraPhoneOtpBlock').classList.remove('d-none');
+                if (data.demoOtp) {
+                    document.getElementById('extraPhoneDemoCode').textContent = data.demoOtp;
+                    document.getElementById('extraPhoneDemoBox').classList.remove('d-none');
+                } else {
+                    document.getElementById('extraPhoneDemoBox').classList.add('d-none');
+                }
+            }
+
+            function sendExtraOtp() {
+                clearExtraErrors();
+                fetch(/*[[@{/account/api/profile/extra-phone/send-otp}]]*/ '/account/api/profile/extra-phone/send-otp', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: jsonHeaders(),
+                    body: JSON.stringify({phone: document.getElementById('extraPhoneInput').value})
+                }).then(function (r) {
+                    return r.json().then(function (j) { return {ok: r.ok, body: j}; });
+                }).then(function (x) {
+                    if (!x.ok) showFieldErrors('', x.body);
+                    else applyExtraResponse(x.body);
+                }).catch(function () {
+                    document.getElementById('extraPhoneErr').textContent = 'Lỗi mạng, thử lại.';
+                });
+            }
+
+            var addPhoneModal = document.getElementById('addPhoneModal');
+            if (addPhoneModal) {
+                addPhoneModal.addEventListener('hidden.bs.modal', function () {
+                    document.getElementById('extraPhoneOtpBlock').classList.add('d-none');
+                    document.getElementById('extraPhoneInput').value = '';
+                    document.getElementById('extraPhoneOtpInput').value = '';
+                    extraNorm = '';
+                    clearExtraErrors();
+                });
+            }
+
+            document.getElementById('extraPhoneSendBtn').addEventListener('click', sendExtraOtp);
+            document.getElementById('extraPhoneResendBtn').addEventListener('click', sendExtraOtp);
+            document.getElementById('extraPhoneConfirmBtn').addEventListener('click', function () {
+                clearExtraErrors();
+                fetch(/*[[@{/account/api/profile/extra-phone/confirm}]]*/ '/account/api/profile/extra-phone/confirm', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: jsonHeaders(),
+                    body: JSON.stringify({
+                        phone: extraNorm || document.getElementById('extraPhoneInput').value,
+                        code: document.getElementById('extraPhoneOtpInput').value
+                    })
+                }).then(function (r) {
+                    return r.json().then(function (j) { return {ok: r.ok, body: j}; });
+                }).then(function (x) {
+                    if (!x.ok) showFieldErrors('', x.body);
+                    else {
+                        var m = bootstrap.Modal.getInstance(document.getElementById('addPhoneModal'));
+                        if (m) m.hide();
+                        window.location.href = /*[[@{/account/profile}]]*/ '/account/profile' + '?phoneAdded';
+                    }
+                }).catch(function () {
+                    document.getElementById('extraPhoneOtpErr').textContent = 'Lỗi mạng, thử lại.';
+                });
+            });
+        })();
+        /*]]>*/
+    </script>
+</section>
+</body>
+</html>

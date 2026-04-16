@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!-- Phân công: Minh — quản lý thanh toán (admin). -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
+<body>
+<section>
+    <h1 class="h4 mb-3">Quản lý thanh toán</h1>
+
+    <h2 class="h5">Cấu hình tỉ lệ</h2>
+    <p class="small text-muted mb-2">Khi hủy đơn, số tiền hoàn cho khách luôn bằng <strong>toàn bộ tiền đặt cọc</strong> đã thu.</p>
+    <form th:action="@{/admin/payment/config}" th:object="${config}" method="post" class="row g-3 mb-4">
+        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+        <div class="col-md-3">
+            <label class="form-label">Tỉ lệ % đặt cọc</label>
+            <input type="number" step="0.01" class="form-control" th:field="*{depositPercent}">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Lưu cấu hình</button>
+        </div>
+    </form>
+
+    <h2 class="h5">Hotline hỗ trợ</h2>
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Số hotline</th>
+            <th>Active</th>
+            <th>Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="h : ${hotlines}">
+            <td th:text="${h.id}"></td>
+            <td th:text="${h.phoneNumber}"></td>
+            <td>
+                <span class="badge"
+                      th:classappend="${h.active} ? ' bg-success' : ' bg-secondary'"
+                      th:text="${h.active} ? 'Đang bật' : 'Tạm tắt'"></span>
+            </td>
+            <td>
+                <form th:action="@{|/admin/payment/hotlines/${h.id}/toggle|}" method="post" class="d-inline">
+                    <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                    <button type="submit" class="btn btn-sm"
+                            th:classappend="${h.active} ? ' btn-outline-danger' : ' btn-outline-success'"
+                            th:text="${h.active} ? 'Tắt' : 'Bật'"></button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <form th:action="@{/admin/payment/hotlines}" th:object="${hotlineForm}" method="post" class="row g-3 mb-4">
+        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+        <div class="col-md-4">
+            <label class="form-label">Thêm số hotline</label>
+            <input type="text" class="form-control" th:field="*{phoneNumber}" required>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Thêm</button>
+        </div>
+    </form>
+
+    <h2 class="h5">Tài khoản nhận tiền</h2>
+    <p class="small text-muted mb-2">
+        Điền <strong>mã BIN 6 số</strong> của ngân hàng (ví dụ Techcombank thường là <code>970407</code>, Vietcombank <code>970436</code> — tra đúng STK của bạn).
+        Có thể xem API danh sách mã ngân hàng:
+        <a href="https://www.vietqr.io/en/danh-sach-api/api-danh-sach-ma-ngan-hang/" target="_blank" rel="noopener">tài liệu VietQR</a>
+        hoặc gọi <code>GET https://api.vietqr.io/v2/banks</code> (trả JSON).
+    </p>
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ngân hàng</th>
+            <th>Tên chủ TK</th>
+            <th>Số TK</th>
+            <th>BIN (VietQR)</th>
+            <th>Active</th>
+            <th>Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="a : ${accounts}">
+            <td th:text="${a.id}"></td>
+            <td th:text="${a.bankName}"></td>
+            <td th:text="${a.accountName}"></td>
+            <td th:text="${a.accountNumber}"></td>
+            <td style="min-width: 12rem;">
+                <form th:action="@{|/admin/payment/accounts/${a.id}/bin|}" method="post" class="d-flex flex-wrap gap-1 align-items-center">
+                    <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                    <input type="text" name="bankBin" class="form-control form-control-sm" style="max-width: 7rem;"
+                           th:value="${a.bankBin}" placeholder="970436" maxlength="10" inputmode="numeric"
+                           title="6 số BIN">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>
+                </form>
+            </td>
+            <td>
+                <span class="badge"
+                      th:classappend="${a.active} ? ' bg-success' : ' bg-secondary'"
+                      th:text="${a.active} ? 'Đang bật' : 'Tạm tắt'"></span>
+            </td>
+            <td>
+                <form th:action="@{|/admin/payment/accounts/${a.id}/toggle|}" method="post">
+                    <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                    <button type="submit" class="btn btn-sm"
+                            th:classappend="${a.active} ? ' btn-outline-danger' : ' btn-outline-success'"
+                            th:text="${a.active} ? 'Tắt' : 'Bật'"></button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <form th:action="@{/admin/payment/accounts}" th:object="${accountForm}" method="post" class="row g-3">
+        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+        <div class="col-md-3">
+            <label class="form-label">Ngân hàng</label>
+            <input type="text" class="form-control" th:field="*{bankName}" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Tên chủ tài khoản</label>
+            <input type="text" class="form-control" th:field="*{accountName}" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Số tài khoản</label>
+            <input type="text" class="form-control" th:field="*{accountNumber}" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Mã BIN (6 số)</label>
+            <input type="text" class="form-control" th:field="*{bankBin}" placeholder="VD: 970436" maxlength="10" inputmode="numeric">
+            <div class="form-text">Bắt buộc để tạo QR VietQR trên trang đặt cọc.</div>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Thêm tài khoản</button>
+        </div>
+    </form>
+</section>
+</body>
+</html>

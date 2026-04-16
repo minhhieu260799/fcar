@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!-- Phân công: Bảo — quản lý liên hệ tư vấn (admin). -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
+<body>
+<section>
+    <h1 class="h4 mb-3">Quản lý yêu cầu liên hệ tư vấn</h1>
+    <form method="get" id="adminContactsFilterForm" class="row g-2 mb-4 align-items-end">
+        <div class="col-md-3 col-lg-2">
+            <label class="form-label small mb-1">Năm</label>
+            <select name="year" class="form-select form-select-sm" aria-label="Lọc theo năm"
+                    onchange="document.getElementById('adminContactsFilterForm').submit()">
+                <option value="" th:selected="${filterYear == null}">Tất cả</option>
+                <option th:each="y : ${yearOptions}" th:value="${y}" th:text="${y}"
+                        th:selected="${filterYear != null and filterYear == y}"></option>
+            </select>
+        </div>
+        <div class="col-md-3 col-lg-2">
+            <label class="form-label small mb-1">Tháng</label>
+            <select name="month" class="form-select form-select-sm" aria-label="Lọc theo tháng"
+                    onchange="document.getElementById('adminContactsFilterForm').submit()">
+                <option value="" th:selected="${filterMonth == null}">Tất cả</option>
+                <option th:each="m : ${#numbers.sequence(1, 12)}" th:value="${m}"
+                        th:text="|Tháng ${m}|"
+                        th:selected="${filterMonth != null and filterMonth == m}"></option>
+            </select>
+        </div>
+        <div class="col-md-4 col-lg-3">
+            <label class="form-label small mb-1">Trạng thái</label>
+            <select name="status" class="form-select form-select-sm" aria-label="Lọc theo trạng thái"
+                    onchange="document.getElementById('adminContactsFilterForm').submit()">
+                <option value="" th:selected="${status == null}">Tất cả</option>
+                <option th:each="s : ${allStatuses}" th:value="${s}"
+                        th:text="${s.name() == 'PENDING'} ? 'Chờ xử lý' : (${s.name() == 'CONTACTED'} ? 'Đã liên hệ' : 'Đã hủy')"
+                        th:selected="${status != null and status == s}"></option>
+            </select>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                <th scope="col" class="text-nowrap">ID</th>
+                <th scope="col">Khách hàng</th>
+                <th scope="col">Xe</th>
+                <th scope="col" class="text-nowrap">Ngày tạo</th>
+                <th scope="col" class="text-nowrap">Trạng thái</th>
+                <th class="text-nowrap" scope="col">Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${requests}">
+                <td class="text-muted font-monospace" th:text="${r.id}"></td>
+                <td class="fw-medium" th:text="${r.user.fullName}"></td>
+                <td th:text="${@carDefinitionLabelFormatter.format(r.carInventory.carDefinition)}"></td>
+                <td class="text-nowrap" th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm') : '—'}"></td>
+                <td>
+                    <span class="badge rounded-pill"
+                          th:classappend="${r.status.name() == 'PENDING' ? ' bg-warning text-dark' : (r.status.name() == 'CONTACTED' ? ' bg-success' : ' bg-secondary')}"
+                          th:text="${r.status.name() == 'PENDING'} ? 'Chờ xử lý' : (${r.status.name() == 'CONTACTED'} ? 'Đã liên hệ' : 'Đã hủy')"></span>
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-outline-primary" th:href="@{|/admin/contacts/${r.id}|}">
+                        <i class="bi bi-eye me-1"></i>Xem chi tiết
+                    </a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(requests)}">
+                <td colspan="6" class="text-center text-muted py-5">Không có yêu cầu phù hợp bộ lọc.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</body>
+</html>

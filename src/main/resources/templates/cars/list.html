@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiệp Hiếu — danh sách xe. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section>
+    <h1 th:if="${showCarListPageTitle}" class="h3 mb-3">Danh sách xe</h1>
+    <div class="row g-4 align-items-start">
+        <aside class="col-12 col-lg-3 order-2 order-lg-1">
+            <th:block th:replace="~{fragments/storefront-filters :: filters}"></th:block>
+        </aside>
+        <div class="col-12 col-lg-9 order-1 order-lg-2">
+            <div class="home-catalog__search mb-4">
+                <label class="visually-hidden" for="storefrontCarSearchInput">Tìm mẫu xe</label>
+                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden border home-catalog__search-input-group">
+                    <span class="input-group-text bg-white border-end-0 text-secondary">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                    </span>
+                    <input type="search"
+                           class="form-control border-start-0 ps-0"
+                           id="storefrontCarSearchInput"
+                           autocomplete="off"
+                           spellcheck="false"
+                           placeholder="Tìm theo hãng, dòng xe, phân khúc, năm…"
+                           th:value="${searchQuery}"
+                           aria-describedby="storefrontCarSearchStatus"
+                           aria-busy="false">
+                </div>
+                <p class="small text-muted mt-2 mb-0 home-catalog__search-status" id="storefrontCarSearchStatus" aria-live="polite"
+                   th:text="${listingFilter.hasEffectiveFilters()} ? (${page.totalElements == 0} ? 'Không có mẫu xe phù hợp' : |Tìm thấy ${page.totalElements} mẫu xe phù hợp|) : ''"></p>
+            </div>
+            <div id="storefrontCarListingMount"
+                 class="storefront-car-listing-mount"
+                 data-car-list-on-home="false"
+                 th:attr="data-page-size=${page.size}">
+                <th:block th:replace="~{fragments/storefront-car-list :: carListingContent}"></th:block>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/compare.js}"></script>
+    <script th:src="@{/js/storefront-listing.js}"></script>
+</section>
+</body>
+</html>

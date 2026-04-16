@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiếu — sửa kho xe. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section>
+    <div th:replace="~{fragments/admin-success-toast :: toast(success=${success})}"></div>
+    <div th:if="${inventoryEditErrors != null && !inventoryEditErrors.isEmpty()}" class="alert alert-danger" role="alert">
+        <ul class="mb-0 ps-3">
+            <li th:each="msg : ${inventoryEditErrors}" th:text="${msg}">Lỗi</li>
+        </ul>
+    </div>
+    <h1 class="h4 mb-3">Chuyển xe sang chi nhánh khác</h1>
+    <p class="text-muted">
+        <span th:text="${@carDefinitionLabelFormatter.format(inventory.carDefinition)}"></span>
+        <span th:if="${inventory.carDefinition.segment != null}"> — <span th:text="${inventory.carDefinition.segment.name}"></span></span>
+        — Năm <span th:text="${inventory.carDefinition.productionYear}"></span>
+        <span th:if="${inventory.carColor != null}"> — Màu: <span th:text="${inventory.carColor.colorValue}"></span></span>
+    </p>
+
+    <form th:object="${form}" class="row g-3" style="max-width: 520px;" onsubmit="return false;">
+        <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+        <div class="col-12">
+            <label class="form-label">Cửa hàng</label>
+            <select class="form-select" th:field="*{branchId}" required>
+                <option value="">— Chọn cửa hàng —</option>
+                <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}"></option>
+            </select>
+            <div class="form-text text-muted small">Nếu chọn chi nhánh đã có cùng mẫu xe và màu, hệ thống sẽ gộp số lượng vào dòng đó.</div>
+            <div class="form-text text-muted small mt-1">Chức năng mở rộng, chưa hoạt động</div>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Số lượng cần chuyển</label>
+            <input type="number" class="form-control" th:field="*{quantity}" required min="0">
+        </div>
+        <div class="col-12">
+            <button type="button" class="btn btn-primary">Xác nhận</button>
+            <a class="btn btn-outline-secondary"
+               th:href="@{/admin/cars/import(historyYear=${returnHistoryYear},historyMonth=${returnHistoryMonth},historyDay=${returnHistoryDay},inventoryModelId=${returnInventoryModelId})}">Quay lại</a>
+        </div>
+    </form>
+</section>
+</body>
+</html>

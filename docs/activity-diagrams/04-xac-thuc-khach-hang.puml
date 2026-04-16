@@ -1,0 +1,78 @@
+@startuml FCAR-xac-thuc-khach-hang
+' Ký hiệu theo mẫu giảng viên: swimlane, start/stop, nhánh [guard], fork/join
+
+skinparam backgroundColor white
+skinparam activity {
+  BackgroundColor white
+  BorderColor black
+  DiamondBackgroundColor white
+  FontSize 11
+}
+skinparam ArrowColor black
+
+title Activity Diagram — Luồng xác thực khách hàng (FCAR)
+
+|Khách hàng|
+start
+:Mở trang đăng ký / đăng nhập;
+
+if (Chọn chức năng?) then ([Đăng ký])
+  :Nhập thông tin đăng ký;
+  |Hệ thống FCAR|
+  :Validate dữ liệu (email, SĐT, mật khẩu);
+  if (Dữ liệu hợp lệ và chưa trùng?) then ([Không])
+    |Khách hàng|
+    :Hiển thị lỗi và yêu cầu nhập lại;
+    stop
+  else ([Có])
+    :Tạo tài khoản CUSTOMER;
+  endif
+  |Khách hàng|
+  :Đăng nhập bằng form hoặc Google;
+else ([Đăng nhập])
+endif
+
+|Hệ thống FCAR|
+if (Phương thức đăng nhập?) then ([Form])
+  :Xác thực email + mật khẩu;
+else ([Google OAuth2])
+  |Google OAuth2|
+  :Xác thực tài khoản Google;
+  |Hệ thống FCAR|
+  :Tạo / cập nhật người dùng từ Google;
+endif
+
+if (Xác thực thành công?) then ([Không])
+  |Khách hàng|
+  :Hiển thị lỗi đăng nhập;
+  stop
+else ([Có])
+endif
+
+if (Khách chưa có số điện thoại?) then ([Có])
+  |Khách hàng|
+  :Nhập SĐT tại modal hồ sơ;
+  |Hệ thống FCAR|
+  fork
+    :Gửi OTP xác minh SĐT;
+  fork again
+    :Hiển thị mã demo OTP (môi trường dev);
+  end fork
+  |Khách hàng|
+  :Nhập OTP xác minh;
+  |Hệ thống FCAR|
+  if (OTP hợp lệ?) then ([Không])
+    |Khách hàng|
+    :Hiển thị lỗi OTP;
+    stop
+  else ([Có])
+    :Lưu SĐT vào hồ sơ người dùng;
+  endif
+else ([Không])
+endif
+
+|Khách hàng|
+:Vào trang chủ / trang sau đăng nhập;
+stop
+
+@enduml

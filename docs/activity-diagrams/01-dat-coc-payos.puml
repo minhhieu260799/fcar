@@ -1,0 +1,73 @@
+@startuml FCAR-dat-coc-PayOS
+' Bản đồ ký hiệu (theo mẫu giảng viên):
+' 1 Swimlane |...|  2 start  3 :Hoạt động;  4 mũi tên (PlantUML tự vẽ)
+' 5 if/endif = nhánh (hình thoi)  6 [Điều kiện] trên nhánh
+' 7 fork / fork again / end fork = song song  8 join = end fork
+' 9 Nhiều nhánh gộp lại: merge (PlantUML gộp tại cùng một hoạt động sau if/endif)
+' 10 stop = kết thúc (vòng tròn đồng tâm)
+
+skinparam backgroundColor white
+skinparam activity {
+  BackgroundColor white
+  BorderColor black
+  DiamondBackgroundColor white
+  FontSize 11
+}
+skinparam ArrowColor black
+
+title Activity Diagram — Đặt cọc mua xe qua PayOS (chức năng chính FCAR)
+
+|Khách hàng|
+start
+:Mở trang đặt cọc cho mẫu xe;
+
+|Hệ thống FCAR|
+if (Đã đăng nhập?) then ([Chưa])
+  |Khách hàng|
+  :Đăng nhập;
+  |Hệ thống FCAR|
+endif
+
+if (Còn xe trong kho đại diện?) then ([Không])
+  |Khách hàng|
+  :Hiển thị thông báo hết xe;
+  stop
+else ([Có])
+endif
+
+:Tính số tiền cọc theo cấu hình;
+:Gọi API PayOS tạo link thanh toán;
+:Lưu phiên đặt cọc (PENDING) vào CSDL;
+
+if (PayOS trả về checkout URL?) then ([Không])
+  |Khách hàng|
+  :Hiển thị lỗi khởi tạo thanh toán;
+  stop
+else ([Có])
+endif
+
+|Khách hàng|
+:Chuyển sang trang thanh toán PayOS;
+
+|PayOS|
+:Xử lý giao dịch thanh toán;
+:Gửi webhook kết quả có chữ ký tới FCAR;
+
+|Hệ thống FCAR|
+if (Chữ ký webhook hợp lệ?) then ([Không])
+  :Ghi log / từ chối xử lý;
+  stop
+else ([Có])
+endif
+
+fork
+  :Tạo đơn hàng + cập nhật phiên (PAID) trong CSDL;
+fork again
+  :Gửi email xác nhận đặt cọc cho khách;
+end fork
+
+|Khách hàng|
+:Xem kết quả / lịch sử đơn hàng;
+stop
+
+@enduml

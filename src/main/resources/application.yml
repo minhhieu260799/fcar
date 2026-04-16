@@ -1,0 +1,83 @@
+# Cấu hình mặc định — KHÔNG chứa mật khẩu/secret thật.
+# Cách điền giá trị nhạy cảm (chọn một):
+#   1) Biến môi trường (xem README)
+#   2) Tạo file src/main/resources/application-local.yml (đã gitignore) — copy từ application-local.example.yml
+#
+spring:
+  application:
+    name: fcar
+
+  config:
+    import: optional:classpath:application-local.yml
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:sqlserver://localhost:1433;databaseName=fcar;encrypt=true;trustServerCertificate=true}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
+    show-sql: true
+    open-in-view: false
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+  # Gmail: smtp.gmail.com + mật khẩu ứng dụng. Thiếu cấu hình → gửi mail lỗi; luồng đơn vẫn chạy nhờ MailNotificationService bắt lỗi.
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_OAUTH2_CLIENT_ID:}
+            client-secret: ${GOOGLE_OAUTH2_CLIENT_SECRET:}
+            scope:
+              - email
+              - profile
+
+server:
+  port: ${SERVER_PORT:8080}
+
+fcar:
+  otp:
+    log-phone-delivery: ${FCAR_OTP_LOG_PHONE_DELIVERY:true}
+  vietqr:
+    template: ${FCAR_VIETQR_TEMPLATE:compact}
+  payos:
+    enabled: ${FCAR_PAYOS_ENABLED:false}
+    client-id: ${FCAR_PAYOS_CLIENT_ID:}
+    api-key: ${FCAR_PAYOS_API_KEY:}
+    checksum-key: ${FCAR_PAYOS_CHECKSUM_KEY:}
+    base-url: ${FCAR_PAYOS_BASE_URL:https://api-merchant.payos.vn}
+    public-base-url: ${FCAR_PAYOS_PUBLIC_BASE_URL:http://localhost:8080}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG

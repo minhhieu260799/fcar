@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiệp Hiếu — so sánh xe. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section class="compare-page rounded-3 border-0 bg-white p-3 p-md-4 p-lg-5 shadow-sm">
+    <header class="compare-page__head mb-4 pb-3 border-bottom border-opacity-10">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+            <div>
+                <h1 class="h2 fw-bold mb-2 compare-page__title">
+                    <i class="bi bi-intersect text-primary me-2"></i>So sánh xe
+                </h1>
+                <p class="text-muted mb-0 small">
+                    Chọn tối đa 3 mẫu. Dữ liệu được lưu trên trình duyệt của bạn.
+                </p>
+            </div>
+            <a class="btn btn-outline-secondary rounded-pill" th:href="@{/}">
+                <i class="bi bi-house me-1"></i> Trang chủ
+            </a>
+        </div>
+    </header>
+
+    <!-- 3 ô cố định: đã chọn / trống (+) -->
+    <div class="compare-slots row g-0 mb-4 mb-lg-5 rounded-4 border compare-slots__row bg-body overflow-hidden">
+        <div class="col-md-4 compare-slot d-flex flex-column"
+             th:each="def : ${slotCars}">
+            <th:block th:if="${def != null}">
+                <div class="compare-slot-filled flex-grow-1 d-flex flex-column p-3 p-lg-4 position-relative text-center">
+                    <button type="button"
+                            class="btn btn-light border-0 btn-sm rounded-circle compare-slot-remove shadow-sm"
+                            th:title="'Gỡ xe'"
+                            th:attr="data-car-id=${def.id}"
+                            onclick="removeFromCompare(this.getAttribute('data-car-id'))"
+                            aria-label="Gỡ khỏi so sánh">
+                        <i class="bi bi-x-lg text-secondary"></i>
+                    </button>
+                    <a th:href="@{|/cars/${def.id}|}" class="ratio ratio-4x3 compare-slot-filled__img rounded-3 overflow-hidden bg-light d-block">
+                        <img th:if="${def.coverImageUrl != null}"
+                             th:src="${def.coverImageUrl}"
+                             class="object-fit-cover" alt="">
+                        <div th:unless="${def.coverImageUrl != null}"
+                             class="d-flex align-items-center justify-content-center text-muted small h-100">Chưa có ảnh</div>
+                    </a>
+                    <a th:href="@{|/cars/${def.id}|}"
+                       class="small fw-semibold text-body text-decoration-none compare-slot-filled__title mt-3 lh-sm d-block">
+                        <span th:text="${@carDefinitionLabelFormatter.formatListingTitle(def)}">Tên xe</span>
+                    </a>
+                </div>
+            </th:block>
+            <th:block th:if="${def == null}">
+                <div class="compare-slot-empty flex-grow-1 d-flex flex-column align-items-center justify-content-center p-4 py-5">
+                    <button type="button"
+                            class="compare-slot-add btn border-0 p-0 d-flex flex-column align-items-center gap-3 bg-transparent"
+                            th:disabled="${!canAddMore}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#compareAddModal"
+                            th:attr="aria-disabled=${!canAddMore}">
+                        <span class="compare-slot-add__circle d-inline-flex align-items-center justify-content-center rounded-4">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                        </span>
+                        <span class="compare-slot-add__label small text-secondary fw-medium">Thêm xe</span>
+                    </button>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <!-- Bảng thông số (chỉ khi đã có ít nhất 1 xe) -->
+    <div th:if="${!#lists.isEmpty(definitions)}" class="compare-table-wrap mb-2">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3">
+            <h2 class="h6 text-uppercase text-secondary letter-spacing-1 mb-0">Thông số chi tiết</h2>
+            <div class="form-check compare-only-diff-check" th:if="${#lists.size(definitions) >= 2}">
+                <input class="form-check-input" type="checkbox" id="compareOnlyDiff" autocomplete="off">
+                <label class="form-check-label small text-body" for="compareOnlyDiff">Chỉ xem các thông số khác nhau</label>
+            </div>
+        </div>
+        <div class="table-responsive compare-table-responsive rounded-4 border overflow-hidden">
+            <table class="table table-hover compare-table mb-0" id="compareSpecsTable">
+                <tbody>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Giá niêm yết</th>
+                    <td class="align-middle border-end text-center" th:each="def : ${definitions}">
+                        <div th:if="${def.promoPrice != null}">
+                            <span class="text-muted text-decoration-line-through small d-block"
+                                  th:text="|${#numbers.formatDecimal(def.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                            <span class="fw-semibold text-danger"
+                                  th:text="|${#numbers.formatDecimal(def.promoPrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                        </div>
+                        <div th:if="${def.promoPrice == null}">
+                            <span class="fw-semibold text-primary"
+                                  th:text="|${#numbers.formatDecimal(def.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Năm sản xuất</th>
+                    <td class="align-middle border-end text-center" th:each="def : ${definitions}"
+                        th:text="${def.productionYear}">—</td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Hãng / Dòng</th>
+                    <td class="align-middle border-end text-center small" th:each="def : ${definitions}">
+                        <span th:text="${def.brand != null ? def.brand.name : '—'}"></span>
+                        <span class="text-muted"> · </span>
+                        <span th:text="${def.model != null ? def.model.name : '—'}"></span>
+                    </td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Phân khúc</th>
+                    <td class="align-middle border-end text-center small" th:each="def : ${definitions}"
+                        th:text="${def.segment != null ? def.segment.name : '—'}">—</td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Kiểu dáng</th>
+                    <td class="align-middle border-end text-center small" th:each="def : ${definitions}"
+                        th:text="${def.bodyType != null ? def.bodyType.displayName : '—'}">—</td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Nhiên liệu</th>
+                    <td class="align-middle border-end text-center small" th:each="def : ${definitions}">
+                        <th:block th:if="${def.fuelType != null and !#strings.isEmpty(def.fuelType)}"
+                                  th:text="${def.fuelType}"></th:block>
+                        <th:block th:if="${def.fuelType == null or #strings.isEmpty(def.fuelType)}">—</th:block>
+                    </td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Số ghế</th>
+                    <td class="align-middle border-end text-center" th:each="def : ${definitions}"
+                        th:text="${def.seats}">—</td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Công suất</th>
+                    <td class="align-middle border-end text-center small" th:each="def : ${definitions}">
+                        <th:block th:if="${def.horsepower != null}">
+                            <span th:text="${def.horsepower}"></span> mã lực
+                        </th:block>
+                        <th:block th:if="${def.horsepower == null}">—</th:block>
+                    </td>
+                </tr>
+                <tr class="compare-spec-row">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end align-top pt-3">Màu sắc</th>
+                    <td class="align-top border-end text-center pt-3" th:each="def : ${definitions}">
+                        <div class="d-flex flex-wrap justify-content-center gap-1" th:if="${!#lists.isEmpty(def.colors)}">
+                            <th:block th:each="c : ${def.colors}">
+                                <span th:if="${c.colorValue != null and #strings.startsWith(#strings.trim(c.colorValue), '#')}"
+                                      class="car-color-swatch"
+                                      role="img"
+                                      th:style="|background-color: ${#strings.trim(c.colorValue)};|"
+                                      th:title="${#strings.trim(c.colorValue)}"></span>
+                                <span th:if="${c.colorValue != null and !#strings.startsWith(#strings.trim(c.colorValue), '#')}"
+                                      class="badge rounded-pill bg-light text-dark border"
+                                      th:text="${#strings.trim(c.colorValue)}"></span>
+                            </th:block>
+                        </div>
+                        <span th:if="${#lists.isEmpty(def.colors)}" class="text-muted">—</span>
+                    </td>
+                </tr>
+                <tr class="compare-spec-row compare-extra-attr-row"
+                    th:each="attrName : ${compareExtraAttributeNames}">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end"
+                        th:text="${attrName}">Thông số</th>
+                    <td class="align-middle border-end text-center small" th:each="def : ${definitions}">
+                        <th:block th:with="inner=${extraAttrByDefId.get(def.id)}, val=${inner != null ? inner.get(attrName) : null}">
+                            <span th:if="${val != null and !#strings.isEmpty(val)}" th:text="${val}"></span>
+                            <span th:if="${val == null or #strings.isEmpty(val)}" class="text-muted">—</span>
+                        </th:block>
+                    </td>
+                </tr>
+                <tr class="compare-spec-row" data-compare-ignore-diff="true">
+                    <th scope="row" class="compare-table__label-col text-secondary small border-end">Chi tiết</th>
+                    <td class="align-middle border-end text-center" th:each="def : ${definitions}">
+                        <a class="btn btn-sm btn-primary rounded-pill px-3" th:href="@{|/cars/${def.id}|}">
+                            Xem chi tiết
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Modal: chọn xe (chỉ ảnh + tên) -->
+<div class="modal fade" id="compareAddModal" tabindex="-1" aria-labelledby="compareAddModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content compare-add-modal border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h2 class="modal-title h5 fw-semibold" id="compareAddModalLabel">Chọn xe để so sánh</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <p class="small text-muted mb-3" th:if="${!#lists.isEmpty(modalPickerCars)}">
+                    Chọn một mẫu — có thể thêm tối đa 3 xe.
+                </p>
+                <div class="row row-cols-2 row-cols-md-3 g-3" th:if="${!#lists.isEmpty(modalPickerCars)}">
+                    <div class="col" th:each="item : ${modalPickerCars}">
+                        <button type="button"
+                                class="compare-modal-card btn w-100 h-100 p-0 text-start border rounded-4 overflow-hidden bg-white shadow-sm"
+                                th:attr="data-car-id=${item.definition.id}"
+                                onclick="addToCompareByIdFromModal(this)">
+                            <div class="ratio ratio-4x3 bg-light">
+                                <img th:if="${item.definition.coverImageUrl != null}"
+                                     th:src="${item.definition.coverImageUrl}"
+                                     class="object-fit-cover" alt="">
+                                <div th:unless="${item.definition.coverImageUrl != null}"
+                                     class="d-flex align-items-center justify-content-center small text-muted">—</div>
+                            </div>
+                            <div class="px-2 py-3">
+                                <span class="small fw-semibold text-body compare-modal-card__title d-block lh-sm"
+                                      th:text="${@carDefinitionLabelFormatter.formatListingTitle(item.definition)}">Xe</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <p th:if="${#lists.isEmpty(modalPickerCars)}" class="text-muted small mb-0 text-center py-4">
+                    Không còn mẫu nào khác trong hệ thống hoặc bạn đã thêm đủ các xe đang có.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/compare.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof syncCompareUrlWithStorage === 'function') {
+            syncCompareUrlWithStorage();
+        }
+        if (typeof initCompareDiffFilter === 'function') {
+            initCompareDiffFilter();
+        }
+    });
+</script>
+</body>
+</html>

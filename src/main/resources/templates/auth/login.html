@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!-- Phân công: Nguyên — đăng nhập. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section class="mx-auto" style="max-width: 420px;">
+    <h1 class="h4 mb-3 text-center">Đăng nhập</h1>
+    <div th:if="${param.oauth2Error}" class="alert alert-danger small">
+        Đăng nhập Google không lấy được email. Hãy thử lại hoặc dùng cách đăng nhập khác.
+    </div>
+    <div th:if="${param.oauth2Unverified}" class="alert alert-warning small">
+        Email Google chưa được xác minh. Vui lòng xác minh email trong tài khoản Google rồi thử lại.
+    </div>
+    <form th:action="@{/auth/login}" method="post" class="card card-body">
+        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+        <input type="hidden" name="redirect"
+               th:if="${param.redirect != null and !#lists.isEmpty(param.redirect)}"
+               th:value="${param.redirect[0]}">
+        <div class="mb-3">
+            <label class="form-label">Tài khoản (email hoặc số điện thoại)</label>
+            <input type="text" class="form-control" name="username" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" class="form-control" name="password" required>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="showPasswordCheckbox"
+                   onclick="togglePasswordVisibility()">
+            <label class="form-check-label" for="showPasswordCheckbox">Hiển thị mật khẩu</label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 mb-2">Đăng nhập</button>
+        <div class="text-center mt-2 mb-0">
+            <a th:href="@{/auth/forgot-password}">Quên mật khẩu?</a>
+        </div>
+    </form>
+    <div class="d-grid gap-2 mt-3">
+        <a class="btn btn-outline-secondary w-100" th:href="@{/auth/login-phone}">Đăng nhập bằng số điện thoại (OTP)</a>
+        <a class="btn btn-outline-danger w-100" th:href="@{/oauth2/authorization/google}">Đăng nhập bằng Google</a>
+    </div>
+    <p class="text-center small text-muted mt-3 mb-0">
+        Bạn chưa có tài khoản?
+        <a th:href="@{/auth/register}" class="link-secondary fw-semibold">Đăng ký</a>
+    </p>
+</section>
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.querySelector('input[name="password"]');
+        if (!passwordInput) {
+            return;
+        }
+        passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+    }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!-- Phân công: Minh — hóa đơn/hiển thị thanh toán (khách). -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section>
+    <h1>Hóa đơn mua xe</h1>
+    <h2>Đơn hàng #<span th:text="${order.id}"></span></h2>
+
+    <h3>Thông tin khách hàng</h3>
+    <p>Họ tên: <span th:text="${order.user.fullName}"></span></p>
+    <p>Số điện thoại: <span th:text="${order.user.phone}"></span></p>
+    <p>Email: <span th:text="${order.user.email}"></span></p>
+
+    <h3>Thông tin xe</h3>
+    <p>
+        <span th:text="${@carDefinitionLabelFormatter.format(order.carInventory.carDefinition)}"></span>
+        - Năm <span th:text="${order.carInventory.carDefinition.productionYear}"></span>
+    </p>
+    <p>
+        <span th:if="${order.carInventory.carDefinition.promoPrice != null}">
+            Giá bán:
+            <span class="text-muted text-decoration-line-through me-1"
+                  th:text="${#numbers.formatDecimal(order.carInventory.carDefinition.salePrice, 0, 'COMMA', 0, 'POINT')}"></span>
+            <span class="text-danger"
+                  th:text="${#numbers.formatDecimal(order.carInventory.carDefinition.promoPrice, 0, 'COMMA', 0, 'POINT')}"></span>
+        </span>
+        <span th:if="${order.carInventory.carDefinition.promoPrice == null}">
+            Giá bán:
+            <span th:text="${#numbers.formatDecimal(order.carInventory.carDefinition.salePrice, 0, 'COMMA', 0, 'POINT')}"></span>
+        </span>
+    </p>
+
+    <h3>Thanh toán</h3>
+    <p>Trạng thái: <span th:text="${@orderStatusLabelFormatter.format(order.status)}"></span></p>
+    <p>Tổng tiền: <span th:text="${#numbers.formatDecimal(order.totalPrice, 0, 'COMMA', 0, 'POINT')}"></span></p>
+    <p th:if="${order.depositAmount != null}">
+        Đã đặt cọc:
+        <span th:text="${#numbers.formatDecimal(order.depositAmount, 0, 'COMMA', 0, 'POINT')}"></span>
+    </p>
+    <p th:if="${order.paidAmount != null}">
+        Đã thanh toán:
+        <span th:text="${#numbers.formatDecimal(order.paidAmount, 0, 'COMMA', 0, 'POINT')}"></span>
+    </p>
+    <p th:if="${order.status.name() == 'CANCELED' or order.status.name() == 'REFUNDED'}">
+        Số tiền hoàn lại dự kiến:
+        <span th:text="${#numbers.formatDecimal(order.refundedAmount, 0, 'COMMA', 0, 'POINT')}"></span>
+    </p>
+
+    <p><em>Hóa đơn này có thể in từ trình duyệt.</em></p>
+</section>
+</body>
+</html>
+

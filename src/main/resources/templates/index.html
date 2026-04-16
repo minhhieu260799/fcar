@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiệp Hiếu — trang chủ, danh sách xe. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<div class="home-page">
+    <header class="home-hero mb-4 mb-lg-5">
+        <div class="home-hero__inner rounded-4 p-4 p-lg-5 position-relative overflow-hidden">
+            <div class="home-hero__glow" aria-hidden="true"></div>
+            <div class="row align-items-center position-relative">
+                <div class="col-lg-7 mb-4 mb-lg-0">
+                    <p class="home-hero__eyebrow text-uppercase small mb-2">Đại lý ô tô trực tuyến</p>
+                    <h1 class="home-hero__title display-5 fw-bold text-white mb-3">
+                        Chọn xe phù hợp — đặt ngay hoặc lái thử
+                    </h1>
+                    <p class="home-hero__lead lead text-white mb-4 mb-lg-4 opacity-90">
+                        Xem giá niêm yết, tồn kho toàn hệ thống và ưu đãi. Tư vấn và đặt chỗ chỉ với vài thao tác.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 gap-lg-3">
+                        <a class="btn btn-light btn-lg rounded-pill px-4 shadow-sm fw-semibold"
+                           href="#danh-sach-xe">
+                            <i class="bi bi-grid-3x3-gap me-2"></i>Xem mẫu xe
+                        </a>
+                        <button type="button"
+                                class="btn btn-outline-light btn-lg rounded-pill px-4 fw-semibold border-white border-opacity-50"
+                                onclick="openComparePage()">
+                            <i class="bi bi-intersect me-2"></i>So sánh xe
+                        </button>
+                        <a class="btn btn-outline-light btn-lg rounded-pill px-4 fw-semibold border-white border-opacity-50"
+                           th:href="@{/favorites}">
+                            <i class="bi bi-heart me-2"></i>Danh sách yêu thích
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-5 d-none d-lg-block text-center">
+                    <div class="home-hero__visual mx-auto">
+                        <div class="home-hero__ring home-hero__ring--1"></div>
+                        <div class="home-hero__ring home-hero__ring--2"></div>
+                        <div class="home-hero__icon-wrap rounded-circle d-inline-flex align-items-center justify-content-center">
+                            <i class="bi bi-car-front-fill home-hero__icon" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="home-features mb-4 mb-lg-5">
+        <div class="row g-3 g-md-4">
+            <div class="col-md-4">
+                <div class="home-feature-card h-100 rounded-4 border bg-white p-4 text-center">
+                    <div class="home-feature-card__icon mx-auto mb-3 rounded-circle d-inline-flex align-items-center justify-content-center">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    </div>
+                    <h2 class="h6 fw-semibold mb-2">Niêm yết minh bạch</h2>
+                    <p class="small text-muted mb-0">Giá và khuyến mãi hiển thị rõ trên từng mẫu xe.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="home-feature-card h-100 rounded-4 border bg-white p-4 text-center">
+                    <div class="home-feature-card__icon mx-auto mb-3 rounded-circle d-inline-flex align-items-center justify-content-center">
+                        <i class="bi bi-headset" aria-hidden="true"></i>
+                    </div>
+                    <h2 class="h6 fw-semibold mb-2">Tư vấn &amp; liên hệ</h2>
+                    <p class="small text-muted mb-0">Đặt lịch lái thử hoặc nhận tư vấn theo nhu cầu của bạn.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="home-feature-card h-100 rounded-4 border bg-white p-4 text-center">
+                    <div class="home-feature-card__icon mx-auto mb-3 rounded-circle d-inline-flex align-items-center justify-content-center">
+                        <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+                    </div>
+                    <h2 class="h6 fw-semibold mb-2">Yêu thích &amp; so sánh</h2>
+                    <p class="small text-muted mb-0">Lưu xe yêu thích và so sánh tối đa 3 mẫu cùng lúc.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-catalog" id="danh-sach-xe">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3 mb-4 pb-1 border-bottom border-opacity-50">
+            <div>
+                <h2 class="h3 mb-2 fw-semibold text-body">Mẫu xe đang kinh doanh</h2>
+                <p class="text-muted mb-0 small">Sắp xếp theo hãng — gõ ô tìm để lọc nhanh — tồn kho cập nhật theo thời điểm xem.</p>
+            </div>
+            <a class="btn btn-outline-primary rounded-pill px-4"
+               th:href="@{/cars(q=${listingFilter.q},brands=${listingFilter.brandsParam},models=${listingFilter.modelsParam},segments=${listingFilter.segmentsParam},inStock=${listingFilter.inStockOnly})}">
+                Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-4 align-items-start">
+            <aside class="col-12 col-lg-3 order-2 order-lg-1">
+                <th:block th:replace="~{fragments/storefront-filters :: filters}"></th:block>
+            </aside>
+            <div class="col-12 col-lg-9 order-1 order-lg-2">
+                <div class="home-catalog__search mb-4">
+                    <label class="visually-hidden" for="storefrontCarSearchInput">Tìm mẫu xe</label>
+                    <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden border home-catalog__search-input-group">
+                        <span class="input-group-text bg-white border-end-0 text-secondary" id="storefrontCarSearchAddon">
+                            <i class="bi bi-search" aria-hidden="true"></i>
+                        </span>
+                        <input type="search"
+                               class="form-control border-start-0 ps-0"
+                               id="storefrontCarSearchInput"
+                               autocomplete="off"
+                               spellcheck="false"
+                               placeholder="Tìm theo hãng, dòng xe, phân khúc, năm…"
+                               th:value="${searchQuery}"
+                               aria-describedby="storefrontCarSearchStatus"
+                               aria-busy="false">
+                    </div>
+                    <p class="small text-muted mt-2 mb-0 home-catalog__search-status" id="storefrontCarSearchStatus" aria-live="polite"
+                       th:text="${listingFilter.hasEffectiveFilters()} ? (${page.totalElements == 0} ? 'Không có mẫu xe phù hợp' : |Tìm thấy ${page.totalElements} mẫu xe phù hợp|) : ''"></p>
+                </div>
+                <div id="storefrontCarListingMount"
+                     class="storefront-car-listing-mount"
+                     data-car-list-on-home="true"
+                     th:attr="data-page-size=${page.size}">
+                    <th:block th:replace="~{fragments/storefront-car-list :: carListingContent}"></th:block>
+                </div>
+            </div>
+        </div>
+        <script th:src="@{/js/compare.js}"></script>
+        <script th:src="@{/js/storefront-listing.js}"></script>
+    </section>
+</div>
+</body>
+</html>

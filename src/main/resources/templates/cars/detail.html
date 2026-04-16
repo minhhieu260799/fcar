@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiệp Hiếu — chi tiết xe & đánh giá. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section class="car-detail-page">
+    <div class="row g-4 g-lg-5 align-items-lg-stretch">
+        <div class="col-lg-6 d-flex flex-column h-100">
+            <div class="car-detail-hero rounded-3 overflow-hidden bg-light border position-relative flex-shrink-0 mb-0"
+                 th:if="${definition.coverImageUrl != null}">
+                <img class="d-block w-100 car-detail-hero-img" th:src="${definition.coverImageUrl}"
+                     alt="Ảnh đại diện mẫu xe">
+            </div>
+            <div class="car-detail-hero car-detail-hero--empty rounded-3 bg-light border d-flex align-items-center justify-content-center text-muted flex-shrink-0"
+                 th:if="${definition.coverImageUrl == null}">
+                <span>Chưa có ảnh mẫu xe</span>
+            </div>
+
+            <div class="car-detail-carousel-wrap mt-auto pt-3 w-100 d-flex flex-column"
+                 th:if="${!#lists.isEmpty(definition.images) and definition.images.size() > 1}">
+                <p class="small text-secondary mb-2">Thư viện ảnh</p>
+                <div class="car-detail-gallery position-relative rounded-3 overflow-hidden bg-light border flex-grow-1">
+                    <div id="carImages" class="carousel slide h-100" data-bs-ride="carousel">
+                        <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#carImages"
+                                    th:each="img, iter : ${definition.images}"
+                                    th:attr="data-bs-slide-to=${iter.index}"
+                                    th:classappend="${iter.index == 0} ? 'active'"
+                                    th:aria-current="${iter.index == 0} ? 'true' : 'false'"
+                                    th:aria-label="|Ảnh ${iter.index + 1}|"></button>
+                        </div>
+                        <div class="carousel-inner rounded-3">
+                            <div class="carousel-item" th:each="img,iter : ${definition.images}"
+                                 th:classappend="${iter.index == 0} ? 'active'">
+                                <img class="d-block w-100 car-detail-carousel-img" th:src="${img.imageUrl}" alt="Ảnh xe">
+                            </div>
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carImages" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Trước</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carImages" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Sau</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 h-100">
+            <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
+                <h1 class="h3 car-detail-title mb-0 flex-grow-1 min-w-0"
+                    th:text="${@carDefinitionLabelFormatter.format(definition)}"></h1>
+                <button type="button"
+                        class="btn btn-sm rounded-circle car-detail-fav-btn car-detail-fav-header flex-shrink-0"
+                        th:classappend="${favorite} ? 'car-detail-fav-btn--on' : ''"
+                        th:attr="data-car-id=${definition.id}, aria-label=${favorite ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}"
+                        th:title="${favorite} ? 'Bỏ yêu thích' : 'Yêu thích'"
+                        onclick="toggleFavoriteFromList(event, this)">
+                    <i th:class="${favorite} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                </button>
+            </div>
+            <p class="text-muted small mb-4">Thông số tham khảo — liên hệ showroom để biết khuyến mãi hiện tại.</p>
+
+            <div class="list-group list-group-flush rounded-3 border mb-4 car-detail-specs">
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-3">
+                    <span class="text-secondary small">Nhiên liệu</span>
+                    <span class="fw-medium" th:text="${definition.fuelType}">—</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-3">
+                    <span class="text-secondary small">Kiểu dáng</span>
+                    <span class="fw-medium" th:text="${definition.bodyType != null ? definition.bodyType.displayName : '—'}">—</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-3">
+                    <span class="text-secondary small">Số ghế</span>
+                    <span class="fw-medium" th:text="${definition.seats}">—</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-3"
+                     th:if="${definition.horsepower != null}">
+                    <span class="text-secondary small">Công suất</span>
+                    <span class="fw-medium"><span th:text="${definition.horsepower}"></span> mã lực</span>
+                </div>
+                <div class="list-group-item py-3 px-3" th:if="${!#lists.isEmpty(definition.colors)}">
+                    <span class="text-secondary small d-block mb-2">Màu sắc</span>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <th:block th:each="c : ${definition.colors}">
+                            <span th:if="${c.colorValue != null and #strings.startsWith(#strings.trim(c.colorValue), '#')}"
+                                  class="car-color-swatch"
+                                  role="img"
+                                  th:style="|background-color: ${#strings.trim(c.colorValue)};|"
+                                  th:title="${#strings.trim(c.colorValue)}"
+                                  th:aria-label="${'Màu ' + #strings.trim(c.colorValue)}"></span>
+                            <span th:if="${c.colorValue != null and !#strings.startsWith(#strings.trim(c.colorValue), '#')}"
+                                  class="badge rounded-pill bg-light text-dark border"
+                                  th:text="${#strings.trim(c.colorValue)}"></span>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion car-detail-extra-accordion mb-4" id="accordionExtraSpecs"
+                 th:if="${!#lists.isEmpty(definition.attributes)}">
+                <div class="accordion-item border-0 rounded-3 shadow-sm overflow-hidden">
+                    <h2 class="accordion-header m-0">
+                        <button class="accordion-button collapsed car-detail-extra-toggle py-3 px-3 fw-semibold"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#carExtraSpecsPanel"
+                                aria-expanded="false"
+                                aria-controls="carExtraSpecsPanel">
+                            <span class="d-flex align-items-center flex-wrap gap-2">
+                                <span>Thông số khác</span>
+                                <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle fw-normal"
+                                      th:text="|${#lists.size(definition.attributes)} mục|">0 mục</span>
+                            </span>
+                        </button>
+                    </h2>
+                    <div id="carExtraSpecsPanel"
+                         class="accordion-collapse collapse"
+                         data-bs-parent="#accordionExtraSpecs">
+                        <div class="accordion-body pt-0 pb-3 px-3 bg-body-tertiary bg-opacity-50">
+                            <div class="list-group list-group-flush rounded-3 border bg-white car-detail-extra-list">
+                                <div class="list-group-item d-flex flex-column flex-sm-row flex-sm-wrap justify-content-sm-between align-items-sm-baseline gap-1 py-3 px-3"
+                                     th:each="a : ${definition.attributes}">
+                                    <span class="text-secondary small text-uppercase letter-spacing-1 flex-shrink-0"
+                                          style="min-width: 9rem;"
+                                          th:text="${a.name}">Tên</span>
+                                    <span class="fw-medium text-break text-sm-end flex-grow-1" th:text="${a.value}">Giá trị</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-3 border bg-body-secondary mb-4 car-detail-price-block">
+                <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-1">
+                    <span class="text-secondary small text-uppercase letter-spacing-1">Giá bán</span>
+                    <span class="badge rounded-pill"
+                          th:classappend="${totalStock > 0} ? 'text-bg-success' : 'text-bg-secondary'"
+                          th:text="${totalStock > 0} ? 'Còn hàng' : 'Hết xe'"></span>
+                </div>
+                <div th:if="${definition.promoPrice != null}">
+                    <span class="text-muted text-decoration-line-through me-2 car-detail-price-num"
+                          th:text="|${#numbers.formatDecimal(definition.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                    <span class="fs-3 fw-bold text-danger car-detail-price-num"
+                          th:text="|${#numbers.formatDecimal(definition.promoPrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                </div>
+                <div th:if="${definition.promoPrice == null}">
+                    <span class="fs-3 fw-bold text-primary car-detail-price-num"
+                          th:text="|${#numbers.formatDecimal(definition.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                </div>
+                <p class="small text-muted mt-2 mb-0">
+                    Tồn kho toàn hệ thống: <strong th:text="${totalStock}">0</strong> xe
+                </p>
+            </div>
+
+            <div class="car-detail-actions">
+                <div class="d-grid mb-3" th:if="${totalStock > 0}">
+                    <a class="btn btn-success btn-lg rounded-pill fw-semibold px-4 py-3 car-detail-btn-buy shadow-sm"
+                       th:href="@{|/orders/buy/${definition.id}|}">
+                        <i class="bi bi-bag-check me-2"></i>Đặt mua xe
+                    </a>
+                </div>
+                <div class="car-detail-actions-secondary rounded-3 border bg-white p-3 p-sm-4 shadow-sm">
+                    <div class="row g-2 g-sm-3 justify-content-stretch">
+                        <div class="col-12 col-md-4">
+                            <a class="btn btn-outline-primary w-100 rounded-pill py-2 fw-medium car-detail-action-btn"
+                               th:href="@{|/contacts/request/${definition.id}|}">
+                                <i class="bi bi-chat-dots me-1"></i>Liên hệ tư vấn
+                            </a>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <a class="btn btn-outline-primary w-100 rounded-pill py-2 fw-medium car-detail-action-btn"
+                               th:href="@{|/test-drives/register/${definition.id}|}">
+                                <i class="bi bi-calendar2-check me-1"></i>Đăng ký lái thử
+                            </a>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <button type="button"
+                                    class="btn btn-outline-secondary w-100 rounded-pill py-2 fw-medium car-detail-action-btn"
+                                    th:attr="data-car-id=${definition.id}" onclick="addToCompare(this)">
+                                <i class="bi bi-intersect me-1"></i>So sánh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${definition.description}" class="mt-4 pt-4 border-top">
+                <h2 class="h5 mb-3">Mô tả</h2>
+                <p class="car-detail-prose text-secondary mb-0" th:text="${definition.description}"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 pt-4 border-top car-detail-reviews">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h2 class="h5 mb-1">Đánh giá từ khách hàng</h2>
+                <p class="text-muted small mb-2">Trải nghiệm thực tế từ người đã mua xe tại FCAR.</p>
+                <p th:if="${reviewCount > 0 and reviewAverage != null}"
+                   class="mb-0 d-flex align-items-baseline gap-2 flex-wrap car-review-summary">
+                    <span class="fs-3 fw-bold text-warning lh-sm tabular-nums"
+                          th:text="${#numbers.formatDecimal(reviewAverage, 1, 'COMMA', 1, 'POINT')}">4,2</span>
+                    <span class="text-warning fs-4 lh-1" aria-hidden="true">★</span>
+                    <span class="text-secondary small">(<span th:text="${reviewCount}">12</span> đánh giá)</span>
+                </p>
+            </div>
+            <button th:if="${canReview}" type="button"
+                    class="btn btn-primary rounded-pill px-4 shadow-sm"
+                    data-bs-toggle="modal" data-bs-target="#carReviewModal">
+                <i class="bi bi-plus-lg me-1"></i>Thêm đánh giá
+            </button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(reviews)}" class="rounded-4 border border-dashed bg-body-secondary bg-opacity-50 py-5 px-4 text-center">
+            <i class="bi bi-chat-square-text display-6 text-secondary opacity-50 d-block mb-2"></i>
+            <p class="text-muted mb-0">Chưa có đánh giá nào cho mẫu xe này.</p>
+        </div>
+        <div th:if="${!#lists.isEmpty(reviews)}" class="vstack gap-3 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 car-review-card" th:each="r : ${reviews}">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                        <div>
+                            <strong class="d-block" th:text="${r.user.fullName}">Tên</strong>
+                            <span class="text-muted small" th:if="${r.createdAt != null}"
+                                  th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy')}">—</span>
+                        </div>
+                        <div class="car-review-stars-display text-warning fs-5" th:attr="aria-label=${'Đánh giá ' + r.rating + ' trên 5'}">
+                            <i th:each="i : ${#numbers.sequence(1, 5)}"
+                               class="bi"
+                               th:classappend="${i <= r.rating} ? ' bi-star-fill' : ' bi-star'"></i>
+                        </div>
+                    </div>
+                    <p class="mb-0 text-secondary" th:if="${r.comment != null and !r.comment.isBlank()}" th:text="${r.comment}">Nhận xét</p>
+                    <p class="mb-0 text-muted small fst-italic" th:if="${r.comment == null or r.comment.isBlank()}">Không có nhận xét.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: thêm / sửa đánh giá -->
+        <div class="modal fade" id="carReviewModal" tabindex="-1" aria-labelledby="carReviewModalLabel" aria-hidden="true"
+             th:if="${canReview}">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="modal-header border-0 pb-0 car-review-modal-head text-white">
+                        <div>
+                            <h2 class="modal-title h5 fw-semibold" id="carReviewModalLabel">Đánh giá mẫu xe</h2>
+                            <p class="small mb-0 opacity-90">Chọn số sao và chia sẻ cảm nhận của bạn.</p>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body pt-4 px-4 pb-2">
+                        <form th:action="@{|/cars/${definition.id}/reviews|}" th:object="${reviewForm}" method="post" id="carReviewForm">
+                            <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                            <input type="hidden" th:field="*{rating}" id="carReviewRatingField" value="5">
+
+                            <label class="form-label fw-semibold small text-secondary text-uppercase letter-spacing-1">Mức độ hài lòng</label>
+                            <div class="car-review-star-picker d-flex align-items-center justify-content-center gap-1 gap-sm-2 py-3 px-2 mb-2 rounded-3 bg-light border"
+                                 role="group" aria-label="Chọn từ 1 đến 5 sao">
+                                <button type="button" class="btn btn-link car-review-star-btn p-1 p-sm-2" data-rating="1" aria-label="1 sao">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-link car-review-star-btn p-1 p-sm-2" data-rating="2" aria-label="2 sao">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-link car-review-star-btn p-1 p-sm-2" data-rating="3" aria-label="3 sao">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-link car-review-star-btn p-1 p-sm-2" data-rating="4" aria-label="4 sao">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                                <button type="button" class="btn btn-link car-review-star-btn p-1 p-sm-2" data-rating="5" aria-label="5 sao">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                            </div>
+                            <p class="text-center small text-muted mb-4" id="carReviewStarHint"><span class="fw-semibold text-body" id="carReviewStarLabel">5</span> / 5 sao</p>
+
+                            <label class="form-label fw-semibold" for="carReviewComment">Nhận xét <span class="text-muted fw-normal">(tùy chọn)</span></label>
+                            <textarea class="form-control rounded-3" th:field="*{comment}" id="carReviewComment" rows="4"
+                                      placeholder="Ví dụ: chất lượng xe, thái độ nhân viên, thủ tục giao xe…"></textarea>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" form="carReviewForm" class="btn btn-primary rounded-pill px-4">
+                            <i class="bi bi-send-fill me-1"></i>Gửi đánh giá
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script th:src="@{/js/compare.js}"></script>
+<script th:if="${canReview}">
+(function () {
+    var modal = document.getElementById('carReviewModal');
+    var hidden = document.getElementById('carReviewRatingField');
+    var hint = document.getElementById('carReviewStarLabel');
+    var buttons = document.querySelectorAll('.car-review-star-btn');
+    if (!modal || !hidden || !buttons.length) return;
+
+    function paintStars(n) {
+        buttons.forEach(function (btn) {
+            var r = parseInt(btn.getAttribute('data-rating'), 10);
+            var icon = btn.querySelector('i');
+            if (!icon) return;
+            icon.className = r <= n ? 'bi bi-star-fill' : 'bi bi-star';
+        });
+        if (hint) hint.textContent = String(n);
+    }
+
+    function setRating(n) {
+        hidden.value = String(n);
+        paintStars(n);
+    }
+
+    buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            setRating(parseInt(btn.getAttribute('data-rating'), 10));
+        });
+        btn.addEventListener('mouseenter', function () {
+            paintStars(parseInt(btn.getAttribute('data-rating'), 10));
+        });
+    });
+
+    var picker = document.querySelector('.car-review-star-picker');
+    if (picker) {
+        picker.addEventListener('mouseleave', function () {
+            var v = parseInt(hidden.value, 10);
+            if (!isNaN(v)) paintStars(v);
+        });
+    }
+
+    modal.addEventListener('shown.bs.modal', function () {
+        var v = parseInt(hidden.value, 10);
+        if (isNaN(v) || v < 1 || v > 5) v = 5;
+        setRating(v);
+    });
+})();
+</script>
+<style>
+    .car-review-modal-head {
+        background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
+        padding: 1.25rem 1.5rem;
+    }
+    .car-review-star-btn {
+        color: #fbbf24;
+        text-decoration: none !important;
+        line-height: 1;
+        transition: transform 0.12s ease;
+    }
+    .car-review-star-btn i {
+        font-size: clamp(1.75rem, 5vw, 2.25rem);
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,.08));
+    }
+    .car-review-star-btn:hover {
+        transform: scale(1.08);
+        color: #f59e0b;
+    }
+    .car-review-star-btn:focus {
+        box-shadow: none;
+    }
+    .car-review-card {
+        transition: box-shadow 0.2s ease;
+    }
+    .car-review-card:hover {
+        box-shadow: 0 .5rem 1.25rem rgba(15, 23, 42, .08) !important;
+    }
+</style>
+</body>
+</html>

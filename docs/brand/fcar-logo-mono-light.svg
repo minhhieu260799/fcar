@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 260" role="img" aria-label="FCAR monochrome light logo">
+  <g transform="translate(20,20)">
+    <rect x="0" y="0" width="220" height="220" rx="48" fill="#ffffff" stroke="#ffffff"/>
+    <path d="M38 123c12-34 36-56 71-65h52c22 0 42 9 56 27l15 20v26h-17c-5 17-20 29-38 29-18 0-33-11-38-27h-43c-5 16-20 27-38 27-18 0-33-12-38-29H20v-10l18-25z" fill="#111111"/>
+    <circle cx="73" cy="137" r="16" fill="#ffffff"/>
+    <circle cx="73" cy="137" r="9" fill="#111111"/>
+    <circle cx="171" cy="137" r="16" fill="#ffffff"/>
+    <circle cx="171" cy="137" r="9" fill="#111111"/>
+  </g>
+
+  <text x="290" y="160" font-family="Segoe UI, Arial, sans-serif" font-size="132" font-weight="800" fill="#ffffff" letter-spacing="2">FCAR</text>
+</svg>

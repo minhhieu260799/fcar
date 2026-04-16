@@ -1,0 +1,61 @@
+@startuml FCAR-dang-ky-lai-thu
+' Ký hiệu theo mẫu giảng viên: swimlane, start/stop, nhánh [guard], fork/join
+
+skinparam backgroundColor white
+skinparam activity {
+  BackgroundColor white
+  BorderColor black
+  DiamondBackgroundColor white
+  FontSize 11
+}
+skinparam ArrowColor black
+
+title Activity Diagram — Đăng ký lái thử xe (chức năng chính FCAR)
+
+|Khách hàng|
+start
+:Mở form đăng ký lái thử cho xe;
+
+|Hệ thống FCAR|
+if (Đã đăng nhập?) then ([Chưa])
+  |Khách hàng|
+  :Đăng nhập;
+  |Hệ thống FCAR|
+endif
+
+if (Đã có lịch lái thử chưa hủy cho xe này?) then ([Có])
+  |Khách hàng|
+  :Xem trang thông báo đã đăng ký;
+  stop
+else ([Chưa])
+endif
+
+|Khách hàng|
+:Nhập ngày giờ và gửi đăng ký;
+
+|Hệ thống FCAR|
+if (Dữ liệu form hợp lệ?) then ([Không])
+  |Khách hàng|
+  :Hiển thị lỗi validation trên form;
+  stop
+else ([Có])
+endif
+
+if (Trùng khung giờ với khách khác?) then ([Có])
+  |Khách hàng|
+  :Hiển thị lỗi trùng lịch;
+  stop
+else ([Không])
+endif
+
+fork
+  :Lưu bản ghi đăng ký lái thử (PENDING) vào CSDL;
+fork again
+  :Gửi email xác nhận cho khách;
+end fork
+
+|Khách hàng|
+:Chuyển tới lịch sử / thông báo thành công;
+stop
+
+@enduml
