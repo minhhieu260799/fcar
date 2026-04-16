@@ -1,48 +1,53 @@
 HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
+# Build output
+target/
+build/
+out/
+*.class
+
+# Logs
+*.log
+logs/
+
+# Local environment files
+.env
+.env.*
+*.local
+run-local.bat
+application-local.yml
+**/application-local.yml
+application-*.local.yml
+**/application-*.local.yml
+
+# Spring Boot local override (if created)
+spring-configuration-metadata.json
+
+# Eclipse / STS
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+# IntelliJ IDEA
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# VS Code
 .vscode/
 
-### Local secrets (copy from run-local.bat.example) ###
-run-local.bat
-# Secrets — không commit
-application-local.yml
-**/application-local.yml
-
-# Maven / IDE
-target/
-.idea/
-*.iml
-.classpath
-.project
-.settings/
-*.class
+# OS files
+.DS_Store
+Thumbs.db
