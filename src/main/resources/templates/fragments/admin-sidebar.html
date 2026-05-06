@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!-- Menu admin: Hiếu (catalog, user, báo cáo), Minh (đơn, thanh toán), Bảo (liên hệ, lái thử), Hiệp Hiếu (đánh giá). -->
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="sidebar">
+    <div class="list-group small">
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/branches}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/branches')} ? ' active'">
+            Quản lý chi nhánh
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/brands}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/brands')} ? ' active'">
+            Quản lý hãng
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/models}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/models')} ? ' active'">
+            Quản lý dòng xe
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/segments}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/segments')} ? ' active'">
+            Quản lý phiên bản xe
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/cars/definitions}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/cars')} ? ' active'">
+            Quản lý mẫu xe
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/contacts}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/contacts')} ? ' active'">
+            Quản lý liên hệ tư vấn
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/test-drives}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/test-drives')} ? ' active'">
+            Quản lý đăng ký lái thử
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/orders}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/orders')} ? ' active'">
+            Quản lý đơn đặt mua xe
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/reviews}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/reviews')} ? ' active'">
+            Duyệt đánh giá
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/users}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/users')} ? ' active'">
+            Quản lý người dùng
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/payment}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/payment')} ? ' active'">
+            Quản lý thanh toán
+        </a>
+        <a class="list-group-item list-group-item-action"
+           th:href="@{/admin/reports}"
+           th:classappend="${requestURI != null and requestURI.startsWith('/admin/reports')} ? ' active'">
+            Thống kê - báo cáo
+        </a>
+    </div>
+</div>
+</body>
+</html>
+
