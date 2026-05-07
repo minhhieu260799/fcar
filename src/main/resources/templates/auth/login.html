@@ -2,7 +2,7 @@
 <!-- Phân công: Nguyên — đăng nhập. -->
 <html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
 <body>
-<section class="mx-auto" style="max-width: 420px;">
+<section class="mx-auto auth-login-page" style="max-width: 420px;">
     <h1 class="h4 mb-3 text-center">Đăng nhập</h1>
     <div th:if="${param.oauth2Error}" class="alert alert-danger small">
         Đăng nhập Google không lấy được email. Hãy thử lại hoặc dùng cách đăng nhập khác.

@@ -2,7 +2,7 @@
 <!-- Phân công: Nguyên — đăng ký. -->
 <html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
 <body>
-<section class="mx-auto" style="max-width: 480px;">
+<section class="mx-auto auth-register-page" style="max-width: 480px;">
     <h1 class="h4 mb-3 text-center">Đăng ký tài khoản</h1>
 
     <form th:action="@{/auth/register}" th:object="${form}" method="post" class="card card-body" novalidate>

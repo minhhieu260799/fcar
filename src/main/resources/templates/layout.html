@@ -19,7 +19,7 @@
 <body class="bg-light d-flex flex-column min-vh-100">
 <header class="site-header">
     <nav class="navbar navbar-expand-lg navbar-dark site-navbar site-navbar--luxury">
-        <div class="container site-navbar__container">
+        <div class="container">
             <a class="navbar-brand fw-bold site-navbar__brand" th:href="@{/}">FCAR</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
                     aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,24 +28,16 @@
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 site-navbar__links">
                     <!-- <li class="nav-item">
-                        <a class="nav-link"
-                           th:href="@{/}"
-                           th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI == '/'} ? ' active'">Trang chủ</a>
+                        <a class="nav-link" th:href="@{/}">Trang chủ</a>
                     </li> -->
                     <!-- <li class="nav-item">
-                        <a class="nav-link"
-                           th:href="@{/cars}"
-                           th:classappend="${#httpServletRequest != null and #strings.startsWith(#httpServletRequest.requestURI, '/cars')} ? ' active'">Mẫu xe</a>
+                        <a class="nav-link" th:href="@{/cars}">Mẫu xe</a>
                     </li> -->
                     <!-- <li class="nav-item" th:if="${currentUser != null and !isAdmin}">
-                        <a class="nav-link"
-                           th:href="@{/favorites}"
-                           th:classappend="${#httpServletRequest != null and #strings.startsWith(#httpServletRequest.requestURI, '/favorites')} ? ' active'">Yêu thích</a>
+                        <a class="nav-link" th:href="@{/favorites}">Yêu thích</a>
                     </li> -->
                     <li class="nav-item" th:if="${isAdmin}">
-                        <a class="nav-link"
-                           th:href="@{/admin}"
-                           th:classappend="${#httpServletRequest != null and #strings.startsWith(#httpServletRequest.requestURI, '/admin')} ? ' active'">Admin</a>
+                        <a class="nav-link" th:href="@{/admin}">Admin</a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center">
@@ -59,7 +51,8 @@
                                     type="button" id="navbarUserMenu"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false" aria-label="Menu tài khoản">
-                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white bg-opacity-10 overflow-hidden flex-shrink-0 navbar-user-menu__avatar">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-white bg-opacity-10 overflow-hidden flex-shrink-0"
+                                      style="width: 36px; height: 36px;">
                                     <img th:if="${currentUser.avatarUrl != null and !#strings.isEmpty(currentUser.avatarUrl)}"
                                          th:src="${currentUser.avatarUrl}" alt=""
                                          class="w-100 h-100" style="object-fit: cover;">
@@ -67,7 +60,7 @@
                                        class="bi bi-person-fill text-light" style="font-size: 1.35rem;"></i>
                                 </span>
                                 <span class="text-start d-none d-md-block lh-sm">
-                                    <span class="d-block navbar-user-menu__greeting">Xin chào</span>
+                                    <span class="d-block navbar-user-menu__greeting" style="font-size: 0.72rem;">Xin chào</span>
                                     <span class="small fw-semibold navbar-user-menu__name text-truncate d-inline-block" style="max-width: 11rem;"
                                           th:text="${currentUser.fullName}">Người dùng</span>
                                 </span>

@@ -2,7 +2,7 @@
 <!-- Phân công: Minh (lịch sử mua xe); Bảo (lịch sử liên hệ & lái thử). -->
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
 <body>
-<section class="account-history-page"
+<section class="account-history-page account-history-page--sport"
          th:with="ordersActive=${historyTab == null or historyTab == 'orders'},
                   contactsActive=${historyTab == 'contacts'},
                   testDrivesActive=${historyTab == 'testdrives'}">

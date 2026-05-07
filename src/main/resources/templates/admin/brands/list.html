@@ -9,7 +9,7 @@
                 class="btn btn-primary"
                 data-bs-toggle="modal"
                 data-bs-target="#addBrandModal">
-            Thêm hãng
+            Thêm hãng xe
         </button>
     </div>
 
@@ -57,16 +57,16 @@
                      aria-labelledby="editBrandModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <form th:action="@{|/admin/brands/${b.id}|}" method="post" class="modal-content"
-                              onsubmit="return confirm('Bạn có chắc rằng muốn cập nhật hãng?');">
+                              onsubmit="return confirm('Bạn có chắc rằng muốn cập nhật hãng xe này?');">
                             <input type="hidden" name="_csrf" th:value="${_csrf.token}">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="editBrandModalLabel">Cập nhật hãng</h5>
+                                <h5 class="modal-title" id="editBrandModalLabel">Cập nhật hãng xe</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
-                                    <label class="form-label">Tên hãng</label>
+                                    <label class="form-label">Tên hãng xe</label>
                                     <input type="text" class="form-control" name="name"
                                            th:value="${b.name}" required>
                                 </div>
@@ -87,14 +87,14 @@
     <div class="modal fade" id="addBrandModal" tabindex="-1" aria-labelledby="addBrandModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form th:action="@{/admin/brands}" th:object="${form}" method="post"
-                  class="modal-content" onsubmit="return confirm('Bạn có chắc rằng muốn thêm?');">
+                  class="modal-content" onsubmit="return confirm('Bạn có chắc rằng muốn thêm hãng xe này?');">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addBrandModalLabel">Thêm hãng</h5>
+                    <h5 class="modal-title" id="addBrandModalLabel">Thêm hãng xe</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Tên hãng</label>
+                        <label class="form-label">Tên hãng xe</label>
                         <input type="text" class="form-control" th:field="*{name}" required>
                     </div>
                 </div>

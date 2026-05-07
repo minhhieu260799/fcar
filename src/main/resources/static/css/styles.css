@@ -642,17 +642,6 @@ section.order-choose-page {
     box-shadow: 0 0.7rem 1.8rem rgba(4, 14, 30, 0.35);
 }
 
-.site-navbar__container {
-    padding-top: 0.38rem;
-    padding-bottom: 0.38rem;
-    transition: padding 0.25s ease;
-}
-
-.site-navbar.site-navbar--scrolled .site-navbar__container {
-    padding-top: 0.16rem;
-    padding-bottom: 0.16rem;
-}
-
 .site-navbar__brand {
     letter-spacing: 0.12em;
     font-size: 1.25rem;
@@ -683,13 +672,6 @@ section.order-choose-page {
     background: rgba(255, 255, 255, 0.08);
 }
 
-.site-navbar__links .nav-link.active {
-    color: #fff;
-    background: rgba(151, 197, 255, 0.2);
-    border: 1px solid rgba(188, 220, 255, 0.44);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
-}
-
 .site-navbar__login-btn {
     border-color: rgba(255, 255, 255, 0.4);
     border-radius: 999px;
@@ -711,21 +693,6 @@ section.order-choose-page {
     border: 1px solid var(--navbar-user-pill-border);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
-}
-
-.navbar-user-menu__avatar {
-    width: 36px;
-    height: 36px;
-    transition: width 0.25s ease, height 0.25s ease;
-}
-
-.site-navbar.site-navbar--scrolled .navbar-user-menu__avatar {
-    width: 32px;
-    height: 32px;
-}
-
-.navbar-user-menu__greeting {
-    font-size: 0.72rem;
 }
 
 .navbar-user-menu__btn:hover,
@@ -781,16 +748,6 @@ section.order-choose-page {
     pointer-events: none;
 }
 
-.site-footer__inner::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 13px);
-    opacity: 0.5;
-    pointer-events: none;
-}
-
 .site-footer__brand {
     color: #fff;
     font-weight: 700;
@@ -842,24 +799,6 @@ section.order-choose-page {
 
 .site-footer__bottom {
     border-top: 1px solid rgba(255, 255, 255, 0.12);
-    position: relative;
-    z-index: 1;
-}
-
-.site-footer__inner .row {
-    position: relative;
-    z-index: 1;
-}
-
-@media (max-width: 991.98px) {
-    .site-navbar__container {
-        padding-top: 0.25rem;
-        padding-bottom: 0.25rem;
-    }
-
-    .site-navbar__links .nav-link {
-        margin-bottom: 0.25rem;
-    }
 }
 
 /* Modal luôn hiển thị trên sidebar và mọi nội dung trang admin */
