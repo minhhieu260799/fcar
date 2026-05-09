@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!-- Phân công: Minh — đặt cọc mua xe. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
+<body>
+<section class="order-deposit-page">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a th:href="@{/cars}" class="text-decoration-none">Danh sách xe</a></li>
+            <li class="breadcrumb-item">
+                <a th:href="@{|/cars/${car.carDefinition.id}|}" class="text-decoration-none">Chi tiết xe</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Đặt cọc</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="row g-0 justify-content-center">
+                <div class="col-12 col-xl-10 col-xxl-8">
+                    <div class="p-4 p-lg-5">
+                        <p class="text-uppercase text-secondary small letter-spacing-1 mb-2">Đặt cọc giữ xe</p>
+                        <div class="alert alert-info border-0 mb-3" role="status">
+                            <strong>Thanh toán qua PayOS</strong> — sau khi thanh toán thành công, hệ thống sẽ <strong>tự tạo đơn</strong> (webhook từ PayOS).
+                            Dùng nút bên dưới để mở trang thanh toán PayOS.
+                        </div>
+                        <form th:action="@{/orders/deposit/payos/start}" method="post" class="mb-4">
+                            <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                            <input type="hidden" name="definitionId" th:value="${definitionId}">
+                            <button type="submit" class="btn btn-success btn-lg w-100 py-3 rounded-3 fw-semibold">
+                                Thanh toán đặt cọc qua PayOS
+                            </button>
+                        </form>
+                        <h1 class="h3 fw-semibold mb-3 car-detail-title"
+                            th:text="${@carDefinitionLabelFormatter.format(car.carDefinition)}">Tên xe</h1>
+
+                        <div class="p-4 rounded-3 border bg-body-secondary mb-4 car-detail-price-block">
+                            <div class="text-secondary small text-uppercase letter-spacing-1 mb-2">Giá tiêu chuẩn (chưa bao gồm các loại thuế và phí khác)</div>
+                            <div th:if="${car.carDefinition.promoPrice != null}">
+                                <span class="text-muted text-decoration-line-through me-2 car-detail-price-num"
+                                      th:text="|${#numbers.formatDecimal(car.carDefinition.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                                <span class="fs-4 fw-bold text-danger car-detail-price-num"
+                                      th:text="|${#numbers.formatDecimal(car.carDefinition.promoPrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                            </div>
+                            <div th:if="${car.carDefinition.promoPrice == null}">
+                                <span class="fs-4 fw-bold text-primary car-detail-price-num"
+                                      th:text="|${#numbers.formatDecimal(car.carDefinition.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-secondary border-0 mb-4" role="note">
+                            <div class="small text-uppercase text-secondary fw-semibold mb-1">Mô tả</div>
+                            <p class="mb-0 small" th:text="${depositDescription}">Mô tả</p>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-baseline gap-2 mb-4 pb-3 border-bottom">
+                            <span class="text-secondary">Số tiền cần chuyển</span>
+                            <span class="fs-3 fw-bold text-success car-detail-price-num"
+                                  th:text="|${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')} đ|">0 đ</span>
+                        </div>
+
+                        <p class="small text-muted mt-4 mb-0">
+                            <a th:href="@{|/cars/${car.carDefinition.id}|}" class="text-decoration-none">← Quay lại chi tiết xe</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

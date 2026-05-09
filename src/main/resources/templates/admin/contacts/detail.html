@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<!-- Phân công: Bảo — chi tiết liên hệ (admin). -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
+<body>
+<section class="admin-contact-detail-page">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item">
+                <a th:href="@{/admin/contacts}" class="text-decoration-none">Quản lý liên hệ tư vấn</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                Yêu cầu #<span th:text="${contactRequest.id}">0</span>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h3 fw-semibold mb-1">Chi tiết yêu cầu liên hệ</h1>
+            <p class="text-muted small mb-0">
+                Mã yêu cầu <span class="font-monospace fw-semibold text-body" th:text="${contactRequest.id}">0</span>
+                <span class="mx-2">·</span>
+                Gửi lúc
+                <span th:text="${contactRequest.createdAt != null ? #temporals.format(contactRequest.createdAt, 'dd/MM/yyyy HH:mm') : '—'}">—</span>
+                <span th:if="${contactRequest.updatedAt != null}">
+                    <span class="mx-2">·</span>
+                    Cập nhật
+                    <span th:text="${#temporals.format(contactRequest.updatedAt, 'dd/MM/yyyy HH:mm')}">—</span>
+                </span>
+            </p>
+        </div>
+        <div>
+            <span class="badge rounded-pill px-3 py-2 fs-6"
+                  th:classappend="${contactRequest.status.name() == 'PENDING' ? ' bg-warning-subtle text-warning-emphasis border border-warning-subtle' : (contactRequest.status.name() == 'CONTACTED' ? ' bg-success-subtle text-success-emphasis border border-success-subtle' : ' bg-danger-subtle text-danger-emphasis border border-danger-subtle')}"
+                  th:text="${contactRequest.status.name() == 'PENDING'} ? 'Chờ xử lý' : (${contactRequest.status.name() == 'CONTACTED'} ? 'Đã liên hệ' : 'Đã hủy')">PENDING</span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h2 class="h6 mb-0 text-uppercase text-secondary letter-spacing-1 small">Khách hàng</h2>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start gap-3 mb-4">
+                        <div class="rounded-3 bg-primary bg-opacity-10 text-primary p-3">
+                            <i class="bi bi-person-fill fs-4"></i>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <p class="fw-semibold fs-5 mb-2" th:text="${contactRequest.user.fullName}">Tên</p>
+                            <ul class="list-unstyled small text-secondary mb-0">
+                                <li class="mb-2" th:if="${contactRequest.user.email != null and !contactRequest.user.email.isBlank()}">
+                                    <i class="bi bi-envelope me-2 text-primary"></i>
+                                    <a th:href="|mailto:${contactRequest.user.email}|" class="link-secondary text-decoration-none"
+                                       th:text="${contactRequest.user.email}">email</a>
+                                </li>
+                                <li class="mb-2" th:if="${contactRequest.user.phone != null and !contactRequest.user.phone.isBlank()}">
+                                    <i class="bi bi-telephone me-2 text-primary"></i>
+                                    <a th:href="|tel:${#strings.replace(#strings.replace(contactRequest.user.phone, ' ', ''), '-', '')}|"
+                                       class="link-secondary text-decoration-none"
+                                       th:text="${contactRequest.user.phone}">SĐT</a>
+                                </li>
+                                <li th:if="${(contactRequest.user.email == null or contactRequest.user.email.isBlank()) and (contactRequest.user.phone == null or contactRequest.user.phone.isBlank())}">
+                                    <span class="text-muted">Chưa có email và số điện thoại trên hồ sơ — kiểm tra trong quản lý người dùng.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h2 class="h6 mb-0 text-uppercase text-secondary letter-spacing-1 small">Xe &amp; cửa hàng</h2>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-uppercase text-secondary small letter-spacing-1 mb-1">Mẫu xe</p>
+                    <p class="fw-semibold mb-3"
+                       th:text="${@carDefinitionLabelFormatter.format(contactRequest.carInventory.carDefinition)}">Xe</p>
+                    <p class="text-uppercase text-secondary small letter-spacing-1 mb-1">Kho / chi nhánh</p>
+                    <div th:if="${contactRequest.carInventory.branch != null}">
+                        <p class="fw-medium mb-1" th:text="${contactRequest.carInventory.branch.name}">CH</p>
+                        <p class="small text-muted mb-2" th:text="${contactRequest.carInventory.branch.address}">Địa chỉ</p>
+                        <p class="small mb-3" th:if="${contactRequest.carInventory.branch.phone != null and !contactRequest.carInventory.branch.phone.isBlank()}">
+                            <i class="bi bi-telephone me-1"></i>
+                            <span th:text="${contactRequest.carInventory.branch.phone}"></span>
+                        </p>
+                    </div>
+                    <p class="text-muted small mb-3" th:if="${contactRequest.carInventory.branch == null}">—</p>
+                    <a th:href="@{|/cars/${contactRequest.carInventory.carDefinition.id}|}"
+                       class="btn btn-sm btn-outline-primary rounded-pill" target="_blank" rel="noopener">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Xem trang công khai xe
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mt-4">
+        <div class="card-header bg-light border-0 py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <h2 class="h6 mb-0 fw-semibold">
+                <i class="bi bi-arrow-repeat me-2 text-primary"></i>Cập nhật trạng thái
+            </h2>
+        </div>
+        <div class="card-body p-4">
+            <div th:if="${contactRequest.status.name() == 'PENDING'}" class="row g-4 align-items-end">
+                <div class="col-md-8 col-lg-6">
+                    <p class="text-muted small mb-3">
+                        Chọn hành động tiếp theo. Khách sẽ nhận email (nếu có địa chỉ email) khi trạng thái thay đổi.
+                    </p>
+                    <form th:action="@{|/admin/contacts/${contactRequest.id}/status|}" method="post" class="row g-3 align-items-end">
+                        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                        <div class="col-md-8">
+                            <label class="form-label fw-medium" for="contactStatus">Trạng thái mới</label>
+                            <select id="contactStatus" name="status" class="form-select form-select-lg" required>
+                                <option value="" disabled selected>— Chọn —</option>
+                                <option value="CONTACTED">Đã liên hệ tư vấn</option>
+                                <option value="CANCELED">Hủy yêu cầu</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check2-circle me-1"></i>Lưu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div th:if="${contactRequest.status.name() != 'PENDING'}" class="alert alert-secondary border-0 mb-0" role="status">
+                <i class="bi bi-info-circle me-2"></i>
+                Yêu cầu đã hoàn tất xử lý. Không thể đổi trạng thái thêm trên hệ thống.
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a th:href="@{/admin/contacts}" class="btn btn-outline-secondary rounded-pill">
+            <i class="bi bi-arrow-left me-1"></i>Về danh sách
+        </a>
+    </div>
+</section>
+</body>
+</html>

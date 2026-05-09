@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!-- Phân công: Nguyên — đăng nhập OTP SĐT. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section class="mx-auto auth-login-phone-page" style="max-width: 420px;" th:object="${form}">
+    <h1 class="h4 mb-3 text-center">Đăng nhập bằng số điện thoại</h1>
+    <!-- <p class="text-muted small text-center mb-4">Nhập số đã đăng ký (10 số, bắt đầu bằng 0). Khi bật cấu hình demo, mã OTP ghi trong log server — không gửi SMS.</p> -->
+
+    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger small" role="alert">
+        <ul class="mb-0 ps-3">
+            <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Lỗi</li>
+        </ul>
+    </div>
+
+    <form th:action="@{/auth/login-phone/send-otp}" th:object="${form}" method="post" class="card card-body mb-3"
+          th:classappend="${form.otpSent} ? ' bg-light' : ''">
+        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+        <div class="mb-3">
+            <label class="form-label" for="loginPhone">Số điện thoại</label>
+            <input type="text" class="form-control" th:classappend="${#fields.hasErrors('phone')} ? ' is-invalid'"
+                   id="loginPhone" th:field="*{phone}" maxlength="20" inputmode="numeric"
+                   placeholder="Ví dụ: 0901234567" th:readonly="${form.otpSent}" required>
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" th:disabled="${form.otpSent}">Gửi OTP</button>
+        <div class="text-center mt-2" th:if="${form.otpSent}">
+            <a th:href="@{/auth/login-phone}" class="small">Nhập số khác</a>
+        </div>
+    </form>
+
+    <div th:if="${form.otpSent}" class="card card-body border border-primary border-opacity-25">
+        <h2 class="h6 mb-3">Nhập mã OTP</h2>
+        <div th:if="${demoOtp}" class="alert alert-info small mb-3 py-2" role="status">
+            <span class="fw-semibold">Demo:</span> Mã OTP là <code class="user-select-all" th:text="${demoOtp}">123456</code>
+        </div>
+        <form th:action="@{/auth/login-phone/verify}" th:object="${form}" method="post" id="loginPhoneVerifyForm">
+            <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+            <input type="hidden" th:field="*{phone}">
+            <input type="hidden" th:field="*{otpSent}">
+            <div class="mb-3">
+                <label class="form-label" for="loginOtpCode">Mã OTP (6 số)</label>
+                <input type="text" class="form-control" th:classappend="${#fields.hasErrors('code')} ? ' is-invalid'"
+                       id="loginOtpCode" th:field="*{code}" maxlength="10" inputmode="numeric"
+                       placeholder="000000" autocomplete="one-time-code">
+                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></div>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Xác nhận đăng nhập</button>
+        </form>
+        <form th:action="@{/auth/login-phone/send-otp}" th:object="${form}" method="post" class="mt-3 mb-0">
+            <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+            <input type="hidden" th:field="*{phone}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm w-100">Gửi lại OTP</button>
+        </form>
+    </div>
+
+    <div class="text-center mt-4 small">
+        <a th:href="@{/auth/login}" class="link-secondary">Đăng nhập bằng email</a>
+        <span class="text-muted mx-2">·</span>
+        <a th:href="@{/auth/forgot-password}" class="link-secondary">Quên mật khẩu</a>
+    </div>
+</section>
+</body>
+</html>

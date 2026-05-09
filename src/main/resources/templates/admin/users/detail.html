@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiếu — chi tiết người dùng (admin). -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section th:object="${user}">
+    <nav class="mb-3" aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a th:href="@{/admin/users}">Quản lý người dùng</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chi tiết</li>
+        </ol>
+    </nav>
+
+    <h1 class="h4 mb-3">Thông tin người dùng</h1>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3 text-muted small">ID</div>
+                <div class="col-md-9" th:text="*{id}">1</div>
+
+                <div class="col-md-3 text-muted small">Họ tên</div>
+                <div class="col-md-9 fw-semibold" th:text="*{fullName}">—</div>
+
+                <div class="col-md-3 text-muted small">Email</div>
+                <div class="col-md-9" th:text="*{email} ?: '—'">—</div>
+
+                <div class="col-md-3 text-muted small">Số điện thoại (tài khoản)</div>
+                <div class="col-md-9" th:text="*{phone} ?: '—'">—</div>
+
+                <div class="col-md-3 text-muted small">Vai trò</div>
+                <div class="col-md-9">
+                    <th:block th:each="r : *{roles}">
+                        <span class="badge bg-secondary me-1" th:text="${r}">CUSTOMER</span>
+                    </th:block>
+                </div>
+
+                <div class="col-md-3 text-muted small">Trạng thái</div>
+                <div class="col-md-9">
+                    <!-- <span class="badge bg-success" th:if="*{enabled}">Đang bật</span>
+                    <span class="badge bg-secondary" th:unless="*{enabled}">Đang tắt</span> -->
+                    <span class="badge bg-danger ms-1" th:if="*{lockedByAdmin}">Khóa bởi admin</span>
+                    <span class="badge bg-info text-dark ms-1" th:unless="*{lockedByAdmin}">Không bị khóa</span>
+                </div>
+
+                <div class="col-md-3 text-muted small" th:if="*{lockedUntil != null}">Khóa OTP đến</div>
+                <div class="col-md-9" th:if="*{lockedUntil != null}" th:text="${#temporals.format(user.lockedUntil, 'dd/MM/yyyy HH:mm')}">—</div>
+
+                <div class="col-md-3 text-muted small">Giới tính</div>
+                <div class="col-md-9" th:text="*{gender} ?: '—'">—</div>
+
+                <div class="col-md-3 text-muted small">Ngày sinh</div>
+                <div class="col-md-9" th:text="${user.birthDate != null} ? ${#temporals.format(user.birthDate, 'dd/MM/yyyy')} : '—'">—</div>
+
+                <div class="col-md-3 text-muted small">Địa chỉ</div>
+                <div class="col-md-9" th:text="*{address} ?: '—'">—</div>
+
+                <div class="col-md-3 text-muted small">Ảnh đại diện</div>
+                <div class="col-md-9">
+                    <a th:if="*{avatarUrl != null && !avatarUrl.isEmpty()}" th:href="*{avatarUrl}" target="_blank" rel="noopener" th:text="*{avatarUrl}">URL</a>
+                    <span th:unless="*{avatarUrl != null && !avatarUrl.isEmpty()}">—</span>
+                </div>
+
+                <div class="col-md-3 text-muted small">Tạo lúc</div>
+                <div class="col-md-9" th:text="${user.createdAt != null} ? ${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')} : '—'">—</div>
+
+                <div class="col-md-3 text-muted small">Cập nhật</div>
+                <div class="col-md-9" th:text="${user.updatedAt != null} ? ${#temporals.format(user.updatedAt, 'dd/MM/yyyy HH:mm')} : '—'">—</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-3" th:if="${!extraPhones.isEmpty()}">
+        <div class="card-header">Số điện thoại bổ sung</div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center" th:each="p : ${extraPhones}">
+                <span th:text="${p.phone}">09…</span>
+                <span class="badge rounded-pill" th:classappend="${p.verified} ? ' bg-success' : ' bg-warning text-dark'"
+                      th:text="${p.verified} ? 'Đã xác minh' : 'Chưa xác minh'">—</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="mt-3">
+        <a class="btn btn-outline-secondary" th:href="@{/admin/users}">← Quay lại danh sách</a>
+    </div>
+</section>
+</body>
+</html>

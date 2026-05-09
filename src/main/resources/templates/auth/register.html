@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!-- Phân công: Nguyên — đăng ký. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section class="mx-auto auth-register-page" style="max-width: 480px;">
+    <h1 class="h4 mb-3 text-center">Đăng ký tài khoản</h1>
+
+    <form th:action="@{/auth/register}" th:object="${form}" method="post" class="card card-body" novalidate>
+        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+
+        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger small" role="alert">
+            <ul class="mb-0 ps-3">
+                <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Lỗi</li>
+            </ul>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="regFullName">Họ tên</label>
+            <input type="text" class="form-control" id="regFullName"
+                   th:classappend="${#fields.hasErrors('fullName')} ? ' is-invalid'"
+                   th:field="*{fullName}" maxlength="150" autocomplete="name">
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="regPhone">Số điện thoại</label>
+            <input type="text" class="form-control" id="regPhone"
+                   th:classappend="${#fields.hasErrors('phone')} ? ' is-invalid'"
+                   th:field="*{phone}" maxlength="20" inputmode="numeric" autocomplete="tel"
+                   placeholder="Ví dụ: 0901234567">
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="regEmail">Email</label>
+            <input type="email" class="form-control" id="regEmail"
+                   th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'"
+                   th:field="*{email}" maxlength="150" autocomplete="email">
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="regPassword">Mật khẩu</label>
+            <input type="password" class="form-control" id="regPassword"
+                   th:classappend="${#fields.hasErrors('password')} ? ' is-invalid'"
+                   th:field="*{password}" maxlength="255" autocomplete="new-password">
+            <div class="form-text small">Tối thiểu 8 ký tự, gồm chữ hoa, số và ký tự đặc biệt.</div>
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="regConfirmPassword">Xác nhận mật khẩu</label>
+            <input type="password" class="form-control" id="regConfirmPassword"
+                   th:classappend="${#fields.hasErrors('confirmPassword')} ? ' is-invalid'"
+                   th:field="*{confirmPassword}" maxlength="255" autocomplete="new-password">
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="regShowPw" onchange="fcarToggleRegisterPasswordVisibility()">
+            <label class="form-check-label small" for="regShowPw">Hiển thị mật khẩu</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Đăng ký</button>
+        <div class="text-center mt-3 small">
+            <a th:href="@{/auth/login}" class="link-secondary">Đã có tài khoản? Đăng nhập</a>
+        </div>
+    </form>
+</section>
+<script>
+    function fcarToggleRegisterPasswordVisibility() {
+        var on = document.getElementById('regShowPw').checked;
+        var a = document.getElementById('regPassword');
+        var b = document.getElementById('regConfirmPassword');
+        if (a) a.type = on ? 'text' : 'password';
+        if (b) b.type = on ? 'text' : 'password';
+    }
+</script>
+</body>
+</html>

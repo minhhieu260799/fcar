@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!-- Phân công: Hiệp Hiếu — xe yêu thích. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: body(~{::body})">
+<body>
+<section class="favorites-page favorites-page--sport rounded-3 border-0 bg-white p-3 p-md-4 p-lg-5 shadow-sm">
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-3 border-bottom border-opacity-10">
+        <div>
+            <h1 class="h2 fw-bold mb-1 d-flex align-items-center gap-2">
+                <!-- <i class="bi bi-heart-fill text-danger"></i> -->
+                Bộ sưu tập xe yêu thích của riêng bạn
+            </h1>
+            <!-- <p class="text-muted small mb-0">Các mẫu xe bạn đã lưu — mở từ thẻ xe hoặc trang chi tiết.</p> -->
+        </div>
+        <a class="btn btn-outline-primary rounded-pill" th:href="@{/}">
+            <i class="bi bi-house me-1"></i> Trang chủ
+        </a>
+    </header>
+
+    <div th:if="${#lists.isEmpty(favorites)}" class="favorites-empty text-center py-5 px-3 rounded-4 border border-dashed bg-body-secondary bg-opacity-25">
+        <div class="favorites-empty__icon rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+            <i class="bi bi-heart display-4 text-danger opacity-50" aria-hidden="true"></i>
+        </div>
+        <h2 class="h5 fw-semibold mb-2">Chưa có xe yêu thích</h2>
+        <p class="text-muted small mb-4 mx-auto" style="max-width: 26rem;">
+            Bấm biểu tượng <i class="bi bi-heart"></i> trên thẻ xe hoặc trang chi tiết để thêm vào đây.
+        </p>
+        <a class="btn btn-primary rounded-pill px-4" th:href="@{/}">
+            <i class="bi bi-house me-2"></i>Về trang chủ
+        </a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(favorites)}" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        <div class="col" th:each="fav : ${favorites}" th:with="def=${fav.carInventory.carDefinition}, inv=${fav.carInventory}">
+            <article class="card car-card favorites-card h-100 border-0 shadow-sm overflow-hidden">
+                <a th:href="@{|/cars/${def.id}|}" class="favorites-card__media ratio ratio-16x9 bg-light d-block text-decoration-none">
+                    <img th:if="${def.coverImageUrl != null}"
+                         th:src="${def.coverImageUrl}"
+                         class="object-fit-cover w-100 h-100" alt="">
+                    <div th:unless="${def.coverImageUrl != null}"
+                         class="d-flex align-items-center justify-content-center text-muted small h-100">Chưa có ảnh</div>
+                </a>
+                <div class="card-body d-flex flex-column pt-3 pb-3 px-3">
+                    <h2 class="h6 card-title mb-2 lh-sm">
+                        <a th:href="@{|/cars/${def.id}|}" class="text-body text-decoration-none favorites-card__title"
+                           th:text="${@carDefinitionLabelFormatter.formatListingTitle(def)}">Tên xe</a>
+                    </h2>
+                    <p class="small text-secondary mb-2">
+                        Năm <span th:text="${def.productionYear}">—</span>
+                    </p>
+                    <div class="mb-3">
+                        <span th:if="${def.promoPrice != null}">
+                            <span class="text-muted text-decoration-line-through small d-block"
+                                  th:text="|${#numbers.formatDecimal(def.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                            <span class="fs-6 fw-semibold text-danger"
+                                  th:text="|${#numbers.formatDecimal(def.promoPrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                        </span>
+                        <span th:if="${def.promoPrice == null}">
+                            <span class="fs-6 fw-semibold text-primary"
+                                  th:text="|${#numbers.formatDecimal(def.salePrice, 0, 'COMMA', 0, 'POINT')} đ|"></span>
+                        </span>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <span th:if="${inv.quantity == 0}"
+                              class="badge rounded-pill text-bg-danger">Hết xe</span>
+                        <span th:if="${inv.quantity > 0}"
+                              class="badge rounded-pill text-bg-success-subtle text-success border border-success-subtle">Còn hàng</span>
+                    </div>
+                    <div class="mt-auto d-grid gap-2">
+                        <a class="btn btn-primary rounded-pill py-2 fw-semibold" th:href="@{|/cars/${def.id}|}">
+                            Xem chi tiết
+                        </a>
+                        <div class="d-flex flex-wrap justify-content-center gap-2 favorites-card__links">
+                            <a class="btn btn-sm btn-link text-secondary text-decoration-none px-2"
+                               th:href="@{|/contacts/request/${def.id}|}">
+                                <i class="bi bi-chat-dots me-1"></i>Liên hệ
+                            </a>
+                            <a class="btn btn-sm btn-link text-secondary text-decoration-none px-2"
+                               th:href="@{|/test-drives/register/${def.id}|}">
+                                <i class="bi bi-calendar2-check me-1"></i>Lái thử
+                            </a>
+                            <button type="button"
+                                    class="btn btn-sm btn-link text-secondary text-decoration-none px-2"
+                                    th:attr="data-car-id=${def.id}"
+                                    onclick="addToCompare(this)">
+                                <i class="bi bi-intersect me-1"></i>So sánh
+                            </button>
+                        </div>
+                        <a class="btn btn-sm btn-outline-danger rounded-pill"
+                           th:href="@{/favorites/toggle/{definitionId}(definitionId=${def.id},redirect='/favorites')}">
+                            <i class="bi bi-heartbreak me-1"></i>Bỏ yêu thích
+                        </a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+<script th:src="@{/js/compare.js}"></script>
+</body>
+</html>

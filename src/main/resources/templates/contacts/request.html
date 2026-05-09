@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!-- Phân công: Bảo — liên hệ tư vấn. -->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: body(~{::body})}">
+<body>
+<section class="contact-request-page py-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb small mb-0">
+                    <li class="breadcrumb-item"><a th:href="@{/cars}">Danh sách xe</a></li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{|/cars/${car.carDefinition.id}|}"
+                           th:text="${@carDefinitionLabelFormatter.format(car.carDefinition)}">Xe</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Liên hệ tư vấn</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <div class="card-header bg-primary text-white py-4 px-4 px-md-5 border-0">
+                    <p class="text-white-50 small text-uppercase letter-spacing-1 mb-1">Showroom FCAR</p>
+                    <h1 class="h3 mb-0 fw-semibold">Liên hệ tư vấn</h1>
+                    <p class="mb-0 mt-2 opacity-90" th:text="${@carDefinitionLabelFormatter.format(car.carDefinition)}">Tên xe</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <p class="text-secondary mb-4 mb-md-5">
+                        Gửi yêu cầu bên dưới — đội ngũ tư vấn sẽ liên hệ với bạn qua số điện thoại hoặc email trong tài khoản.
+                    </p>
+
+                    <h2 class="h6 text-uppercase text-muted fw-semibold letter-spacing-1 mb-3">Cửa hàng đang có mẫu xe này</h2>
+                    <div th:if="${#lists.isEmpty(branches)}" class="alert alert-light border mb-4">
+                        Hiện chưa có chi nhánh nào hiển thị cho mẫu xe này.
+                    </div>
+                    <ul class="list-group list-group-flush rounded-3 border mb-4 mb-md-5" th:if="${!#lists.isEmpty(branches)}">
+                        <li class="list-group-item px-3 py-3"
+                            th:each="b : ${branches}">
+                            <div class="d-flex flex-column flex-sm-row flex-sm-wrap gap-3 align-items-sm-center justify-content-between">
+                                <div class="d-flex align-items-start gap-3 min-w-0 flex-grow-1">
+                                    <span class="text-primary flex-shrink-0 mt-1" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                        </svg>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <div class="fw-semibold" th:text="${b.name}">Tên cửa hàng</div>
+                                        <div class="small text-muted mt-1" th:text="${b.address}">Địa chỉ</div>
+                                    </div>
+                                </div>
+                                <div class="flex-shrink-0 ps-5 ps-sm-0">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       th:if="${b.phone != null and !#strings.isEmpty(#strings.trim(b.phone))}"
+                                       th:href="|tel:${#strings.replace(#strings.replace(#strings.trim(b.phone), ' ', ''), '-', '')}|"
+                                       th:text="${#strings.trim(b.phone)}">SĐT</a>
+                                    <span class="small text-muted" th:if="${b.phone == null or #strings.isEmpty(#strings.trim(b.phone))}">—</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <form th:action="@{|/contacts/request/${car.carDefinition.id}|}" method="post" class="d-grid gap-3">
+                        <input type="hidden" th:if="${csrfToken != null}" th:name="${csrfToken.parameterName}" th:value="${csrfToken.token}">
+                        <button type="submit" class="btn btn-primary btn-lg px-4 py-3 rounded-3 fw-semibold">
+                            Liên hệ với tôi ngay
+                        </button>
+                        <p class="text-muted small text-center mb-0 px-md-2">
+                            Bằng việc gửi yêu cầu, bạn đồng ý để FCAR dùng thông tin liên hệ để tư vấn về mẫu xe này.
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a th:href="@{|/cars/${car.carDefinition.id}|}" class="btn btn-link text-decoration-none text-secondary">
+                    &larr; Quay lại chi tiết xe
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

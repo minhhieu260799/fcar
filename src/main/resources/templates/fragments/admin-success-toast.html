@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<!-- Fragment toast chung trang admin. -->
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Toast thông báo thành công admin: cố định phía trên, có nút đóng, không đẩy nội dung -->
+<div th:fragment="toast(success)" th:if="${success}"
+     class="alert alert-success alert-dismissible fade show shadow-sm border-0 position-fixed admin-success-toast"
+     role="alert">
+    <span class="d-flex align-items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="text-success flex-shrink-0" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="M10.97 5.97a.75.75 0 0 0-1.07-1.05L7.477 7.34 6.384 6.246a.75.75 0 0 0-1.06 1.06L6.97 8.95a.75.75 0 0 0 1.079-.02l2.92-2.96z"/>
+        </svg>
+        <span th:text="${success}"></span>
+    </span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+</div>
+</body>
+</html>
+

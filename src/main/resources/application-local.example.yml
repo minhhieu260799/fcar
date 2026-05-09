@@ -1,0 +1,29 @@
+# Sao chép file này thành application-local.yml (cùng thư mục) và điền giá trị thật.
+# application-local.yml đã được .gitignore — không commit lên Git.
+#
+# spring.config.import trong application.yml đã nạp optional:application-local.yml
+# nên chỉ cần tạo file là các giá trị dưới đây ghi đè cấu hình mặc định.
+
+spring:
+  datasource:
+    password: "thay-bang-mat-khau-sql-server"
+
+  mail:
+    username: "email-cua-ban@gmail.com"
+    password: "thay-bang-mat-khau-ung-dung-16-ky-tu"
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "xxx.apps.googleusercontent.com"
+            client-secret: "GOCSPX-xxx"
+
+fcar:
+  payos:
+    enabled: true
+    client-id: "uuid-client-id-payos"
+    api-key: "api-key-payos"
+    checksum-key: "checksum-key-payos"
+    public-base-url: "http://localhost:8080"
